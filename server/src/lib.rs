@@ -67,7 +67,11 @@ pub struct BingoBoard {
     bingo_items: Vec<Vec<BoardItem>>,
 }
 
-#[table(name = item_check_vote, public)]
+#[table(
+    name = item_check_vote,
+    public,
+    index(name = idx_session_item, btree(columns = [game_session_id, bingo_item_id]))
+)]
 pub struct ItemCheckVote {
     #[primary_key]
     #[auto_inc]
@@ -133,9 +137,9 @@ pub fn join_game(ctx: &ReducerContext, game_session_id: u32, password: Option<St
 }
 
 fn is_correct_password(target_pwd: Option<String>, submitted_pwd: Option<String>) -> bool {
-    if let Some(trgt_pwd) = target_pwd {
+    if let Some(t_pwd) = target_pwd {
         if let Some(sub_pwd) = submitted_pwd {
-            trgt_pwd == sub_pwd
+            t_pwd == sub_pwd
         } else {
             false
         }
@@ -212,8 +216,48 @@ pub fn create_bingo_board(ctx: &ReducerContext, player_id: Identity, game_sessio
 
 // ----------
 
+#[reducer]
+pub fn cast_check_off_vote(ctx: &ReducerContext, game_session_id: u32, bingo_item_id: u32) -> Result<(), String> {
+    // insert the vote
+    ctx.db.item_check_vote().insert(ItemCheckVote { id: 0, game_session_id, bingo_item_id, player_id: ctx.sender, created_at: ctx.timestamp });
+    
+    // get the vote threshold we need for this item.
+    // this is the count of players in this session, minus the count of players who are the subject of this item, and multiplied by the threshold percentage
+    let session_players: HashSet<Identity> = ctx.db.player_session().game_session_id().filter(game_session_id).map(|ps| {
+        return ps.player_id;
+    }).collect();
+    
+    let non_voting_players: HashSet<Identity> = ctx.db.player_item_subject().bingo_item_id().filter(bingo_item_id).map(|p| {
+        return p.player_id;
+    }).collect();
+    
+    
+    // check if we have enough of the vote to check the box off (settings? >50% for now)
+    let vote_threshold = get_required_vote_threshold(session_players, non_voting_players, 0.5);
+    let vote_count = ctx.db.item_check_vote().idx_session_item().filter((game_session_id, bingo_item_id)).count();
+    if vote_count >= vote_threshold {
+        // if we have enough, check off the value on the board for everyone that has it.
+        // TODO: need to change the game session to have a hashmap of board items by id, and the BingoBoard to have a list of board tiles, which will contain x and y values, as well as the board item id.
+    } else {
+        // if we don't have enough and the timer for this vote hasn't already started, start the vote.
+
+    }
+
+    Ok(())
+}
+
+
+fn get_required_vote_threshold(session_players: HashSet<Identity>, non_voting_players: HashSet<Identity>, required_percent: f32) -> usize {
+    // get the intersection of players in the session and non_voting_players. This is the non-voting count
+    let non_voting_session_player_count = session_players.intersection(&non_voting_players).count();
+
+    // get vote threshold
+    ((session_players.len() - non_voting_session_player_count) as f32 * required_percent).floor() as usize
+}
+
 // TODO
 // casting vote for item check-off
 // determining when an item should be checked-off
 // determining winner
 // game wind down
+// move password auth to logging in (don't let randos use our bingo game.)
