@@ -1,4 +1,6 @@
-use spacetimedb::{reducer, table, Identity, ReducerContext, SpacetimeType, Table, Timestamp};
+use std::collections::HashSet;
+
+use spacetimedb::{rand::seq::SliceRandom, reducer, table, Identity, ReducerContext, SpacetimeType, Table, Timestamp};
 
 #[table(name = player, public)]
 pub struct Player {
@@ -119,6 +121,10 @@ pub fn join_game(ctx: &ReducerContext, game_session_id: u32, password: Option<St
     if let Some(game_session) = ctx.db.game_session().id().find(game_session_id) {
         // check password
         if is_correct_password(game_session.password, password) {
+            // make the player's board
+            create_bingo_board(ctx, ctx.sender, game_session_id)?;
+
+            // join the session
             ctx.db.player_session().insert(PlayerSession { player_id: ctx.sender, game_session_id });
         }
     }
@@ -165,9 +171,48 @@ pub fn delete_bingo_item(ctx: &ReducerContext, bingo_item_id: u32) -> Result<(),
 
 // ----------
 
+#[reducer]
+pub fn create_bingo_board(ctx: &ReducerContext, player_id: Identity, game_session_id: u32) -> Result<(), String> {
+    // get all of the forbidden items for this player
+    let forbidden_items: HashSet<u32> = ctx.db.player_item_subject().player_id().filter(&player_id).map(|p| {
+        p.bingo_item_id
+    }).collect();
+    
+    // get 25 items to fill the board, excluding items with this player as a subject.
+    let mut potential_board_items: Vec<BingoItem> = vec![];
+    for bingo_item in ctx.db.bingo_item().iter() {
+        // add the item to potential board items, as long as it's not in forbidden items
+        if !forbidden_items.contains(&bingo_item.id) {
+            potential_board_items.push(bingo_item);
+        }
+    }
+
+    // now that we have our potential bingo items, we need to pick 25 of them at random.
+    potential_board_items.shuffle(&mut ctx.rng());
+    // pick the first 25 using a map
+    let mut bingo_items: Vec<Vec<BoardItem>> = vec![];
+
+    for _x in 0..5 {
+        let mut board_column: Vec<BoardItem> = vec![];
+        for _y in 0..5 {
+            if let Some(bingo_item) = potential_board_items.pop() {
+                board_column.push(BoardItem { id: bingo_item.id, body: bingo_item.body.clone(), checked: false });
+            } else {
+                return Err("Not enough valid bingo items to make a board".to_string());
+            }
+        }
+        bingo_items.push(board_column);
+    }
+    
+    ctx.db.bingo_board().insert(BingoBoard {
+        id: 0, player_id, game_session_id, bingo_items
+    });
+    Ok(())
+}
+
+// ----------
+
 // TODO
-// create board
-// create board for player when joining game
 // casting vote for item check-off
 // determining when an item should be checked-off
 // determining winner
