@@ -1,4 +1,4 @@
-use spacetimedb::{reducer, table, Identity, ReducerContext, Table, Timestamp};
+use spacetimedb::{reducer, table, Identity, ReducerContext, SpacetimeType, Table, Timestamp};
 
 #[table(name = player, public)]
 pub struct Player {
@@ -45,6 +45,14 @@ pub struct PlayerItemSubject {
     bingo_item_id: u32,
 }
 
+#[derive(SpacetimeType)]
+pub struct BoardItem {
+    id: u32,
+    /// included so that deleted bingo items don't mess up existing boards.
+    body: String,
+    checked: bool,
+}
+
 #[table(name = bingo_board, public)]
 pub struct BingoBoard {
     #[primary_key]
@@ -54,8 +62,7 @@ pub struct BingoBoard {
     player_id: Identity,
     #[index(btree)]
     game_session_id: u32,
-    #[index(btree)]
-    bingo_item_ids: Vec<u32>,
+    bingo_items: Vec<Vec<BoardItem>>,
 }
 
 #[table(name = item_check_vote, public)]
@@ -94,6 +101,8 @@ fn validate_name(name: String) -> Result<String, String> {
     }
 }
 
+// ----------
+
 #[reducer]
 pub fn start_new_game(ctx: &ReducerContext, name: String, password: Option<String>) -> Result<(), String> {
     let name = validate_name(name)?;
@@ -128,3 +137,38 @@ fn is_correct_password(target_pwd: Option<String>, submitted_pwd: Option<String>
         true
     }
 }
+
+// ----------
+
+#[reducer]
+/// creates a new bingo item, possibly with tagged players that are the subject of the item. 
+/// (subject players cannot have the item appear in their game board)
+pub fn submit_new_bingo_item(ctx: &ReducerContext, body: String, subject_players: Option<Vec<Identity>>) -> Result<(), String> {
+    let new_item = ctx.db.bingo_item().insert(BingoItem { id: 0, body });
+    if let Some(sub_players) = subject_players {
+        for player_id in sub_players {
+            ctx.db.player_item_subject().insert(PlayerItemSubject { player_id, bingo_item_id: new_item.id });
+        }
+    }
+
+    Ok(())
+}
+
+#[reducer]
+pub fn delete_bingo_item(ctx: &ReducerContext, bingo_item_id: u32) -> Result<(), String> {
+    // first, delete any player item subjects
+    ctx.db.player_item_subject().bingo_item_id().delete(bingo_item_id);
+    // then, delete the item itself
+    ctx.db.bingo_item().id().delete(bingo_item_id);
+    Ok(())
+}
+
+// ----------
+
+// TODO
+// create board
+// create board for player when joining game
+// casting vote for item check-off
+// determining when an item should be checked-off
+// determining winner
+// game wind down
