@@ -71,3 +71,60 @@ pub struct ItemCheckVote {
     player_id: Identity,
     created_at: Timestamp,
 }
+
+// ==========================================================
+#[reducer]
+/// Clients invoke this reducer to set their player names.
+pub fn set_name(ctx: &ReducerContext, name: String) -> Result<(), String> {
+    let name = validate_name(name)?;
+    if let Some(player) = ctx.db.player().identity().find(ctx.sender) {
+        ctx.db.player().identity().update(Player { name: Some(name), ..player });
+        Ok(())
+    } else {
+        Err("Cannot set name for unknown player".to_string())
+    }
+}
+
+/// Takes a name and checks if it's acceptable as a user's name.
+fn validate_name(name: String) -> Result<String, String> {
+    if name.is_empty() {
+        Err("Names must not be empty".to_string())
+    } else {
+        Ok(name)
+    }
+}
+
+#[reducer]
+pub fn start_new_game(ctx: &ReducerContext, name: String, password: Option<String>) -> Result<(), String> {
+    let name = validate_name(name)?;
+    let new_game = ctx.db.game_session().insert(GameSession {
+        id: 0, name, password: password.clone(), active: true, winner: None 
+    });
+    // add the current player to the game automatically
+    join_game(ctx, new_game.id, password)?;
+    Ok(())
+}
+
+#[reducer]
+pub fn join_game(ctx: &ReducerContext, game_session_id: u32, password: Option<String>) -> Result<(), String> {
+    if let Some(game_session) = ctx.db.game_session().id().find(game_session_id) {
+        // check password
+        if is_correct_password(game_session.password, password) {
+            ctx.db.player_session().insert(PlayerSession { player_id: ctx.sender, game_session_id });
+        }
+    }
+
+    Ok(())
+}
+
+fn is_correct_password(target_pwd: Option<String>, submitted_pwd: Option<String>) -> bool {
+    if let Some(trgt_pwd) = target_pwd {
+        if let Some(sub_pwd) = submitted_pwd {
+            trgt_pwd == sub_pwd
+        } else {
+            false
+        }
+    } else {
+        true
+    }
+}
