@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use spacetimedb::{rand::seq::SliceRandom, reducer, table, Identity, ReducerContext, SpacetimeType, Table, Timestamp};
+use spacetimedb::{rand::seq::SliceRandom, reducer, table, Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration, Timestamp};
 
 #[table(name = player, public)]
 pub struct Player {
@@ -10,6 +10,13 @@ pub struct Player {
     online: bool,
 }
 
+#[derive(SpacetimeType)]
+pub struct BoardItem {
+    id: u32,
+    /// included so that deleted bingo items don't mess up existing boards.
+    body: String,
+    checked: bool,
+}
 #[table(name = game_session, public)]
 pub struct GameSession {
     #[primary_key]
@@ -17,8 +24,10 @@ pub struct GameSession {
     id: u32,
     name: String,
     password: Option<String>, // need to hex encode / hash?
+    #[index(btree)]
     active: bool,
     winner: Option<Identity>, // the player that won this game
+    board_items: Vec<BoardItem>,
 }
 
 #[table(name = player_session, public)]
@@ -48,11 +57,11 @@ pub struct PlayerItemSubject {
 }
 
 #[derive(SpacetimeType)]
-pub struct BoardItem {
+/// the representation of a bingo board item in an actual board
+pub struct BoardItemTile {
     id: u32,
-    /// included so that deleted bingo items don't mess up existing boards.
-    body: String,
-    checked: bool,
+    x: u8,
+    y: u8,
 }
 
 #[table(name = bingo_board, public)]
@@ -64,7 +73,7 @@ pub struct BingoBoard {
     player_id: Identity,
     #[index(btree)]
     game_session_id: u32,
-    bingo_items: Vec<Vec<BoardItem>>,
+    bingo_item_tiles: Vec<BoardItemTile>,
 }
 
 #[table(
@@ -83,6 +92,20 @@ pub struct ItemCheckVote {
     #[index(btree)]
     player_id: Identity,
     created_at: Timestamp,
+}
+
+#[table(
+    name = remove_expired_votes_timer,
+    scheduled(remove_expired_votes),
+    index(name = idx_session_item, btree(columns = [game_session_id, bingo_item_id]))
+)]
+pub struct RemoveExpiredVotesTimer {
+    #[primary_key]
+    #[auto_inc]
+    scheduled_id: u64,
+    bingo_item_id: u32,
+    game_session_id: u32,
+    scheduled_at: ScheduleAt,
 }
 
 // ==========================================================
@@ -113,7 +136,7 @@ fn validate_name(name: String) -> Result<String, String> {
 pub fn start_new_game(ctx: &ReducerContext, name: String, password: Option<String>) -> Result<(), String> {
     let name = validate_name(name)?;
     let new_game = ctx.db.game_session().insert(GameSession {
-        id: 0, name, password: password.clone(), active: true, winner: None 
+        id: 0, name, password: password.clone(), active: true, winner: None, board_items: vec![] 
     });
     // add the current player to the game automatically
     join_game(ctx, new_game.id, password)?;
@@ -177,40 +200,51 @@ pub fn delete_bingo_item(ctx: &ReducerContext, bingo_item_id: u32) -> Result<(),
 
 #[reducer]
 pub fn create_bingo_board(ctx: &ReducerContext, player_id: Identity, game_session_id: u32) -> Result<(), String> {
-    // get all of the forbidden items for this player
-    let forbidden_items: HashSet<u32> = ctx.db.player_item_subject().player_id().filter(&player_id).map(|p| {
-        p.bingo_item_id
-    }).collect();
-    
-    // get 25 items to fill the board, excluding items with this player as a subject.
-    let mut potential_board_items: Vec<BingoItem> = vec![];
-    for bingo_item in ctx.db.bingo_item().iter() {
-        // add the item to potential board items, as long as it's not in forbidden items
-        if !forbidden_items.contains(&bingo_item.id) {
-            potential_board_items.push(bingo_item);
-        }
-    }
-
-    // now that we have our potential bingo items, we need to pick 25 of them at random.
-    potential_board_items.shuffle(&mut ctx.rng());
-    // pick the first 25 using a map
-    let mut bingo_items: Vec<Vec<BoardItem>> = vec![];
-
-    for _x in 0..5 {
-        let mut board_column: Vec<BoardItem> = vec![];
-        for _y in 0..5 {
-            if let Some(bingo_item) = potential_board_items.pop() {
-                board_column.push(BoardItem { id: bingo_item.id, body: bingo_item.body.clone(), checked: false });
-            } else {
-                return Err("Not enough valid bingo items to make a board".to_string());
+    // get the set of current board items in the game session
+    if let Some(mut game_session) = ctx.db.game_session().id().find(game_session_id) {
+        let mut board_items: HashSet<u32> = game_session.board_items.iter().map(|bi| {
+            return bi.id;
+        }).collect();
+        
+        // get all of the forbidden items for this player
+        let forbidden_items: HashSet<u32> = ctx.db.player_item_subject().player_id().filter(&player_id).map(|p| {
+            p.bingo_item_id
+        }).collect();
+        
+        // get 25 items to fill the board, excluding items with this player as a subject.
+        let mut potential_board_items: Vec<BingoItem> = vec![];
+        for bingo_item in ctx.db.bingo_item().iter() {
+            // add the item to potential board items, as long as it's not in forbidden items
+            if !forbidden_items.contains(&bingo_item.id) {
+                potential_board_items.push(bingo_item);
             }
         }
-        bingo_items.push(board_column);
+
+
+        // now that we have our potential bingo items, we need to pick 25 of them at random.
+        potential_board_items.shuffle(&mut ctx.rng());
+        // pick the first 25 using a map
+        let mut bingo_item_tiles: Vec<BoardItemTile> = vec![];
+        for x in 0..5 {
+            for y in 0..5 {
+                if let Some(bingo_item) = potential_board_items.pop() {
+                    // make a new item tile, and add the board item to the set.
+                    bingo_item_tiles.push(BoardItemTile { id: bingo_item.id, x, y });
+                    if board_items.insert(bingo_item.id) {
+                        game_session.board_items.push(BoardItem { id: bingo_item.id, body: bingo_item.body.clone(), checked: false });
+                    }
+                } else {
+                    return Err("Not enough valid bingo items to make a board".to_string());
+                }
+            }
+        }
+        ctx.db.bingo_board().insert(BingoBoard {
+            id: 0, player_id, game_session_id, bingo_item_tiles
+        });
+        // update the game session
+        ctx.db.game_session().id().update(game_session);
     }
     
-    ctx.db.bingo_board().insert(BingoBoard {
-        id: 0, player_id, game_session_id, bingo_items
-    });
     Ok(())
 }
 
@@ -237,10 +271,24 @@ pub fn cast_check_off_vote(ctx: &ReducerContext, game_session_id: u32, bingo_ite
     let vote_count = ctx.db.item_check_vote().idx_session_item().filter((game_session_id, bingo_item_id)).count();
     if vote_count >= vote_threshold {
         // if we have enough, check off the value on the board for everyone that has it.
-        // TODO: need to change the game session to have a hashmap of board items by id, and the BingoBoard to have a list of board tiles, which will contain x and y values, as well as the board item id.
+        // TODO: make board items their own table instead of just a data type?
+        if let Some(mut game_session) = ctx.db.game_session().id().find(game_session_id) {
+            if let Some(item) = game_session.board_items.iter_mut().find(|bi| bi.id == bingo_item_id) {
+                item.checked = true;
+            }
+            ctx.db.game_session().id().update(game_session);
+        }
     } else {
         // if we don't have enough and the timer for this vote hasn't already started, start the vote.
-
+        if ctx.db.remove_expired_votes_timer().idx_session_item().filter((game_session_id, bingo_item_id)).count() == 0 {
+            let expire_time = ctx.timestamp + TimeDuration::from_micros(10_000_000);
+            ctx.db.remove_expired_votes_timer().try_insert(RemoveExpiredVotesTimer {
+                scheduled_id: 0,
+                game_session_id,
+                bingo_item_id,
+                scheduled_at: expire_time.into(), // Schedule for a specific time, not interval
+            })?;
+        }
     }
 
     Ok(())
@@ -255,9 +303,21 @@ fn get_required_vote_threshold(session_players: HashSet<Identity>, non_voting_pl
     ((session_players.len() - non_voting_session_player_count) as f32 * required_percent).floor() as usize
 }
 
+#[reducer]
+pub fn remove_expired_votes(ctx: &ReducerContext, timer: RemoveExpiredVotesTimer) -> Result<(), String> {
+    // get all votes for the expired timer, and delete them.
+    for vote in ctx.db.item_check_vote().idx_session_item().filter((timer.game_session_id, timer.bingo_item_id)) {
+        ctx.db.item_check_vote().id().delete(vote.id);
+    }
+    // then, delete the timer itself.
+    ctx.db.remove_expired_votes_timer().delete(timer);
+    Ok(())
+}
+
+// ---------
+
+
 // TODO
-// casting vote for item check-off
-// determining when an item should be checked-off
 // determining winner
 // game wind down
 // move password auth to logging in (don't let randos use our bingo game.)
