@@ -1,35 +1,100 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from 'react';
+import './App.css';
+
+export type PrettyMessage = {
+  senderName: string;
+  text: string;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [newName, setNewName] = useState('');
+  const [settingName, setSettingName] = useState(false);
+  const [systemMessage, setSystemMessage] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+
+  const prettyMessages: PrettyMessage[] = [];
+
+  const name = '';
+
+  const onSubmitNewName = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSettingName(false);
+    // TODO: Call `setName` reducer
+  };
+
+  const onMessageSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setNewMessage('');
+    // TODO: Call `sendMessage` reducer
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="App">
+      <div className="profile">
+        <h1>Profile</h1>
+        {!settingName ? (
+          <>
+            <p>{name}</p>
+            <button
+              onClick={() => {
+                setSettingName(true);
+                setNewName(name);
+              }}
+            >
+              Edit Name
+            </button>
+          </>
+        ) : (
+          <form onSubmit={onSubmitNewName}>
+            <input
+              type="text"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+            />
+            <button type="submit">Submit</button>
+          </form>
+        )}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div className="message">
+        <h1>Messages</h1>
+        {prettyMessages.length < 1 && <p>No messages</p>}
+        <div>
+          {prettyMessages.map((message, key) => (
+            <div key={key}>
+              <p>
+                <b>{message.senderName}</b>
+              </p>
+              <p>{message.text}</p>
+            </div>
+          ))}
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <div className="system" style={{ whiteSpace: 'pre-wrap' }}>
+        <h1>System</h1>
+        <div>
+          <p>{systemMessage}</p>
+        </div>
+      </div>
+      <div className="new-message">
+        <form
+          onSubmit={onMessageSubmit}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '50%',
+            margin: '0 auto',
+          }}
+        >
+          <h3>New Message</h3>
+          <textarea
+            value={newMessage}
+            onChange={e => setNewMessage(e.target.value)}
+          ></textarea>
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;

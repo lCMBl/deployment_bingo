@@ -386,3 +386,5 @@ pub fn check_for_winner(ctx: &ReducerContext, board_id: u32) -> Result<(), Strin
 // spacetime call --server http://localhost:6666 deployment-bingo submit_new_bingo_item "Someone curses PNNL"
 // spacetime logs --server http://localhost:6666 deployment-bingo
 // spacetime sql --server http://localhost:6666 deployment-bingo "SELECT * FROM bingo_item"
+
+// spacetime generate --lang typescript --out-dir client/src/module_bindings --project-path server
