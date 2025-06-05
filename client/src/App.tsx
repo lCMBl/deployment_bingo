@@ -89,6 +89,7 @@ function App() {
   const [newName, setNewName] = useState('');
   const [settingName, setSettingName] = useState(false);
   const [newBingoItem, setNewBingoItem] = useState('');
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [connected, setConnected] = useState<boolean>(false);
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [conn, setConn] = useState<DbConnection | null>(null);
@@ -200,9 +201,26 @@ function App() {
   const handleSubmitBingoItem = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newBingoItem.trim()) {
-      conn.reducers.submitNewBingoItem(newBingoItem.trim(), undefined);
+      // Convert selected player hex strings to Identity objects
+      const selectedIdentities = selectedPlayers.length > 0 
+        ? selectedPlayers.map(hexString => Identity.fromString(hexString))
+        : undefined;
+      
+      conn.reducers.submitNewBingoItem(newBingoItem.trim(), selectedIdentities);
       setNewBingoItem('');
+      setSelectedPlayers([]);
     }
+  };
+
+  const handlePlayerSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const options = e.target.options;
+    const selected: string[] = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selected.push(options[i].value);
+      }
+    }
+    setSelectedPlayers(selected);
   };
 
   const name = currentPlayer.name || identity.toHexString().substring(0, 8);
@@ -283,6 +301,30 @@ function App() {
             placeholder="Enter a new bingo item..."
             rows={3}
           ></textarea>
+          
+          <div className="player-select-container">
+            <label htmlFor="player-select">Select Player(s) that are the subject of this bingo item, e.g. select Frank if the bingo item is "Frank Swears" (optional):</label>
+            <select
+              id="player-select"
+              multiple
+              value={selectedPlayers}
+              onChange={handlePlayerSelectionChange}
+              className="player-select"
+            >
+              {Array.from(players.values()).map((player) => (
+                <option 
+                  key={player.identity.toHexString()} 
+                  value={player.identity.toHexString()}
+                >
+                  {player.name || player.identity.toHexString().substring(0, 8)}
+                </option>
+              ))}
+            </select>
+            {selectedPlayers.length > 0 && (
+              <p className="selected-count">{selectedPlayers.length} player(s) selected</p>
+            )}
+          </div>
+          
           <button type="submit">Submit</button>
         </form>
       </div>

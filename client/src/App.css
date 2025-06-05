@@ -203,6 +203,58 @@
   background-color: #218838;
 }
 
+/* Player Select Dropdown */
+.player-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.player-select-container label {
+  font-weight: 500;
+  color: #333;
+  text-align: left;
+}
+
+.player-select {
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  min-height: 120px;
+  max-height: 200px;
+  overflow-y: auto;
+  transition: border-color 0.3s;
+}
+
+.player-select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.player-select option {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.player-select option:hover {
+  background-color: #f0f0f0;
+}
+
+.player-select option:checked {
+  background-color: #007bff;
+  color: white;
+}
+
+.selected-count {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+  text-align: left;
+}
+
 /* Responsive Layout */
 @media (min-width: 768px) {
   .App {
