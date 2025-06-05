@@ -86,10 +86,18 @@ function useCurrentPlayer(conn: DbConnection | null, identity: Identity | null):
 
 function App() {
   const [password, setPassword] = useState('');
+  const [newName, setNewName] = useState('');
+  const [settingName, setSettingName] = useState(false);
   const [newBingoItem, setNewBingoItem] = useState('');
   const [connected, setConnected] = useState<boolean>(false);
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [conn, setConn] = useState<DbConnection | null>(null);
+
+  const onSubmitNewName = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSettingName(false);
+    conn?.reducers.setName(newName)
+  };
 
   useEffect(() => {
     const subscribeToQueries = (conn: DbConnection, queries: string[]) => {
@@ -197,10 +205,40 @@ function App() {
     }
   };
 
+  const name = currentPlayer.name || identity.toHexString().substring(0, 8);
+
   return (
     <div className="App">
+      <div className="profile">
+        <h1>Deployment Bingo</h1>
+        {!settingName ? (
+          <>
+            <p>{name}</p>
+            <button
+              onClick={() => {
+                setSettingName(true);
+                setNewName(name);
+              }}
+            >
+              Edit Name
+            </button>
+          </>
+        ) : (
+          <form onSubmit={onSubmitNewName}>
+            <input
+              type="text"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+            />
+            <button type="submit">Submit</button>
+          </form>
+        )}
+      </div>
+      
+      
+      
       <div className="players">
-        <h1>Players</h1>
+        <h2>Players</h2>
         <div className="player-list">
           {Array.from(players.values()).map((player) => (
             <div key={player.identity.toHexString()} className="player-item">
@@ -212,7 +250,7 @@ function App() {
       </div>
       
       <div className="game-sessions">
-        <h1>Game Sessions</h1>
+        <h2>Game Sessions</h2>
         {gameSessions.length === 0 ? (
           <p>No game sessions yet</p>
         ) : (
