@@ -7,3 +7,5 @@ edition = "2024"
 hex = "0.4.3"
 spacetimedb-sdk = "1.1.1"
 yew = { git = "https://github.com/yewstack/yew/", features = ["csr"] }
+
+# spacetime generate --lang rust --out-dir yew-client/src/module_bindings --project-path server
