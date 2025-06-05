@@ -382,3 +382,7 @@ pub fn check_for_winner(ctx: &ReducerContext, board_id: u32) -> Result<(), Strin
 
 // TODO
 // move password auth to logging in (don't let randos use our bingo game.)
+// spacetime publish --server http://localhost:6666 --project-path server  deployment-bingo
+// spacetime call --server http://localhost:6666 deployment-bingo submit_new_bingo_item "Someone curses PNNL"
+// spacetime logs --server http://localhost:6666 deployment-bingo
+// spacetime sql --server http://localhost:6666 deployment-bingo "SELECT * FROM bingo_item"
