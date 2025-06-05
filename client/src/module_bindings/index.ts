@@ -46,6 +46,8 @@ import { RemoveExpiredVotes } from "./remove_expired_votes_reducer.ts";
 export { RemoveExpiredVotes };
 import { SetName } from "./set_name_reducer.ts";
 export { SetName };
+import { SignIn } from "./sign_in_reducer.ts";
+export { SignIn };
 import { StartNewGame } from "./start_new_game_reducer.ts";
 export { StartNewGame };
 import { SubmitNewBingoItem } from "./submit_new_bingo_item_reducer.ts";
@@ -161,6 +163,10 @@ const REMOTE_MODULE = {
       reducerName: "set_name",
       argsType: SetName.getTypeScriptAlgebraicType(),
     },
+    sign_in: {
+      reducerName: "sign_in",
+      argsType: SignIn.getTypeScriptAlgebraicType(),
+    },
     start_new_game: {
       reducerName: "start_new_game",
       argsType: StartNewGame.getTypeScriptAlgebraicType(),
@@ -203,6 +209,7 @@ export type Reducer = never
 | { name: "JoinGame", args: JoinGame }
 | { name: "RemoveExpiredVotes", args: RemoveExpiredVotes }
 | { name: "SetName", args: SetName }
+| { name: "SignIn", args: SignIn }
 | { name: "StartNewGame", args: StartNewGame }
 | { name: "SubmitNewBingoItem", args: SubmitNewBingoItem }
 ;
@@ -322,6 +329,22 @@ export class RemoteReducers {
     this.connection.offReducer("set_name", callback);
   }
 
+  signIn(password: string) {
+    const __args = { password };
+    let __writer = new BinaryWriter(1024);
+    SignIn.getTypeScriptAlgebraicType().serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("sign_in", __argsBuffer, this.setCallReducerFlags.signInFlags);
+  }
+
+  onSignIn(callback: (ctx: ReducerEventContext, password: string) => void) {
+    this.connection.onReducer("sign_in", callback);
+  }
+
+  removeOnSignIn(callback: (ctx: ReducerEventContext, password: string) => void) {
+    this.connection.offReducer("sign_in", callback);
+  }
+
   startNewGame(name: string, password: string | undefined) {
     const __args = { name, password };
     let __writer = new BinaryWriter(1024);
@@ -390,6 +413,11 @@ export class SetReducerFlags {
   setNameFlags: CallReducerFlags = 'FullUpdate';
   setName(flags: CallReducerFlags) {
     this.setNameFlags = flags;
+  }
+
+  signInFlags: CallReducerFlags = 'FullUpdate';
+  signIn(flags: CallReducerFlags) {
+    this.signInFlags = flags;
   }
 
   startNewGameFlags: CallReducerFlags = 'FullUpdate';
