@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use spacetimedb::{rand::seq::SliceRandom, reducer, table, Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration, Timestamp};
 
@@ -64,7 +64,11 @@ pub struct BoardItemTile {
     y: u8,
 }
 
-#[table(name = bingo_board, public)]
+#[table(
+    name = bingo_board,
+    public,
+    index(name = idx_session_player, btree(columns = [game_session_id, player_id]))
+)]
 pub struct BingoBoard {
     #[primary_key]
     #[auto_inc]
@@ -277,6 +281,11 @@ pub fn cast_check_off_vote(ctx: &ReducerContext, game_session_id: u32, bingo_ite
                 item.checked = true;
             }
             ctx.db.game_session().id().update(game_session);
+            // check for game winner
+            let boards: Vec<BingoBoard> = ctx.db.bingo_board().idx_session_player().filter((game_session_id, ctx.sender)).collect();
+            if let Some(board) = boards.first() {
+                check_for_winner(ctx, board.id)?;
+            }
         }
     } else {
         // if we don't have enough and the timer for this vote hasn't already started, start the vote.
@@ -315,9 +324,61 @@ pub fn remove_expired_votes(ctx: &ReducerContext, timer: RemoveExpiredVotesTimer
 }
 
 // ---------
-
+#[reducer]
+pub fn check_for_winner(ctx: &ReducerContext, board_id: u32) -> Result<(), String> {
+    // check to see if a particular bingo board is a winner
+    if let Some(board) = ctx.db.bingo_board().id().find(board_id) {
+        // get the session, which has the checked bingo items
+        if let Some(mut game_session) = ctx.db.game_session().id().find(board.game_session_id) {
+            let mut count_map = HashMap::from([
+                ("x0", 0), ("x1", 0), ("x2", 0), ("x3", 0), ("x4", 0),
+                ("y0", 0), ("y1", 0), ("y2", 0), ("y3", 0), ("y4", 0),
+                ("d1", 0), ("d2", 0), // diagonals 1 and 2
+            ]);
+            // loop through each board item tile, and add to our count map if the tile it checked
+            for bit in board.bingo_item_tiles {
+                // TODO this is going to be real slow. Probably best practice to have board items as their own table.
+                if let Some(bi) = game_session.board_items.iter().find(|bi| bi.id == bit.id) {
+                    if bi.checked {
+                        // add to the count dict.
+                        if let Some(x_count) = count_map.get_mut(format!("x{}", bit.x).as_str()) {
+                           *x_count += 1;
+                        }
+                        if let Some(y_count) = count_map.get_mut(format!("y{}", bit.y).as_str()) {
+                           *y_count += 1;
+                        }
+                        // add to d1/d2
+                        if bit.x == bit.y {
+                            if let Some(d_count_1) = count_map.get_mut("d1") {
+                                *d_count_1 += 1;
+                            }
+                        }
+                        if bit.x + bit.y == 4 {
+                            if let Some(d_count_2) = count_map.get_mut("d2") {
+                                *d_count_2 += 1;
+                            }
+                        }
+                    }
+                } else {
+                    return Err("No board item found in session".to_string());
+                }
+            }
+            // once we have our counts, check to see if any of the counts >= 5. If so, we have a winner!
+            let winner = count_map.iter().any(|(_k,v)| v >= &5);
+            if winner {
+                // then update the session accordingly
+                game_session.winner = Some(board.player_id);
+                game_session.active = false;
+                ctx.db.game_session().id().update(game_session);
+            }
+        }
+    }
+    // 1. get the checked status of all board item tiles
+    // 2. iterate through all items, and count the checked tiles per x and y. so, if a tile at position 3, 2 is checked, 
+    // then the count for x-3 goes up by one, and the count for y-2 goes up by one.
+    // if any individual count is at 5, then we have a winner! need to also do special checking for the diagonals, so those are stored separately.
+    Ok(())
+}
 
 // TODO
-// determining winner
-// game wind down
 // move password auth to logging in (don't let randos use our bingo game.)
