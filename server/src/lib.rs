@@ -380,6 +380,27 @@ pub fn check_for_winner(ctx: &ReducerContext, board_id: u32) -> Result<(), Strin
     Ok(())
 }
 
+// ------------
+
+#[reducer]
+pub fn sign_in(ctx: &ReducerContext, password: String) {
+    if is_correct_password(Some("vapor-core".to_string()), Some(password)) {
+        if let Some(player) = ctx.db.player().identity().find(ctx.sender) {
+            // If this is a returning user, i.e. we already have a `User` with this `Identity`,
+            // set `online: true`, but leave `name` and `identity` unchanged.
+            ctx.db.player().identity().update(Player { online: true, ..player });
+        } else {
+            // If this is a new user, create a `User` row for the `Identity`,
+            // which is online, but hasn't set a name.
+            ctx.db.player().insert(Player {
+                name: None,
+                identity: ctx.sender,
+                online: true,
+            });
+        }
+    }
+}
+
 // TODO
 // move password auth to logging in (don't let randos use our bingo game.)
 // spacetime publish --server http://localhost:6666 --project-path server  deployment-bingo
@@ -388,3 +409,5 @@ pub fn check_for_winner(ctx: &ReducerContext, board_id: u32) -> Result<(), Strin
 // spacetime sql --server http://localhost:6666 deployment-bingo "SELECT * FROM bingo_item"
 
 // spacetime generate --lang typescript --out-dir client/src/module_bindings --project-path server
+
+// spacetime sql deployment-bingo "SELECT * FROM player"

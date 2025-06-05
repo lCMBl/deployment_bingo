@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-
-import { DbConnection, Player } from './module_bindings';
-import type { ErrorContext, EventContext } from './module_bindings';
+import { DbConnection, type ErrorContext, type EventContext, Player } from './module_bindings';
 import { Identity } from '@clockworklabs/spacetimedb-sdk';
 
 export type PrettyMessage = {
@@ -10,13 +8,54 @@ export type PrettyMessage = {
   text: string;
 };
 
+export type PlayerStatus = {
+  name: string;
+  online: boolean;
+}
+
+function usePlayers(conn: DbConnection | null): Map<string, Player> {
+  const [players, setPlayers] = useState<Map<string, Player>>(new Map());
+
+  useEffect(() => {
+    if (!conn) return;
+    const onInsert = (_ctx: EventContext, player: Player) => {
+      setPlayers(prev => new Map(prev.set(player.identity.toHexString(), player)));
+    };
+    conn.db.player.onInsert(onInsert);
+
+    const onUpdate = (_ctx: EventContext, oldPlayer: Player, newPlayer: Player) => {
+      setPlayers(prev => {
+        prev.delete(oldPlayer.identity.toHexString());
+        return new Map(prev.set(newPlayer.identity.toHexString(), newPlayer));
+      });
+    };
+    conn.db.player.onUpdate(onUpdate);
+
+    const onDelete = (_ctx: EventContext, player: Player) => {
+      setPlayers(prev => {
+        prev.delete(player.identity.toHexString());
+        return new Map(prev);
+      });
+    };
+    conn.db.player.onDelete(onDelete);
+
+    return () => {
+      conn.db.player.removeOnInsert(onInsert);
+      conn.db.player.removeOnUpdate(onUpdate);
+      conn.db.player.removeOnDelete(onDelete);
+    };
+  }, [conn]);
+
+  return players;
+}
+
 function App() {
   const [newName, setNewName] = useState('');
   const [settingName, setSettingName] = useState(false);
-  const [systemMessage, setSystemMessage] = useState('');
+  // const [systemMessage, setSystemMessage] = useState('');
   const [newMessage, setNewMessage] = useState('');
 
-    const [connected, setConnected] = useState<boolean>(false);
+  const [connected, setConnected] = useState<boolean>(false);
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [conn, setConn] = useState<DbConnection | null>(null);
 
@@ -55,12 +94,13 @@ function App() {
     };
 
     const onConnectError = (_ctx: ErrorContext, err: Error) => {
+      console.log('error ctx:', _ctx);
       console.log('Error connecting to SpacetimeDB:', err);
     };
 
     setConn(
       DbConnection.builder()
-        .withUri('ws://localhost:6666')
+        .withUri('ws://localhost:3000')
         .withModuleName('deployment-bingo')
         .withToken(localStorage.getItem('auth_token') || '')
         .onConnect(onConnect)
@@ -70,14 +110,27 @@ function App() {
     );
   }, []);
 
+  const players = usePlayers(conn);
+
   const prettyMessages: PrettyMessage[] = [];
 
-  const name = '';
+  if (!conn || !connected || !identity) {
+    return (
+      <div className="App">
+        <h1>Connecting...</h1>
+      </div>
+    );
+  }
+
+  const name =
+    players.get(identity?.toHexString())?.name ||
+    identity?.toHexString().substring(0, 8) ||
+    'unknown';
 
   const onSubmitNewName = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSettingName(false);
-    // TODO: Call `setName` reducer
+    conn.reducers.setName(newName);
   };
 
   const onMessageSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -85,6 +138,8 @@ function App() {
     setNewMessage('');
     // TODO: Call `sendMessage` reducer
   };
+
+  
 
   return (
     <div className="App">
@@ -130,7 +185,7 @@ function App() {
       <div className="system" style={{ whiteSpace: 'pre-wrap' }}>
         <h1>System</h1>
         <div>
-          <p>{systemMessage}</p>
+          {/* <p>{systemMessage}</p> */}
         </div>
       </div>
       <div className="new-message">
