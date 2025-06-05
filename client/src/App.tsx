@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { DbConnection, type ErrorContext, type EventContext, Player, GameSession } from './module_bindings';
+import { DbConnection, type ErrorContext, type EventContext, Player, GameSession, BingoItem, PlayerItemSubject } from './module_bindings';
 import { Identity } from '@clockworklabs/spacetimedb-sdk';
 
 export type PlayerStatus = {
@@ -78,6 +78,68 @@ function useGameSessions(conn: DbConnection | null): GameSession[] {
   return gameSessions;
 }
 
+function useBingoItems(conn: DbConnection | null): BingoItem[] {
+  const [bingoItems, setBingoItems] = useState<BingoItem[]>([]);
+
+  useEffect(() => {
+    if (!conn) return;
+    
+    const onInsert = (_ctx: EventContext, bingoItem: BingoItem) => {
+      setBingoItems(prev => [...prev, bingoItem].sort((a, b) => b.id - a.id));
+    };
+    conn.db.bingoItem.onInsert(onInsert);
+
+    const onUpdate = (_ctx: EventContext, oldItem: BingoItem, newItem: BingoItem) => {
+      setBingoItems(prev => {
+        const filtered = prev.filter(item => item.id !== oldItem.id);
+        return [...filtered, newItem].sort((a, b) => b.id - a.id);
+      });
+    };
+    conn.db.bingoItem.onUpdate(onUpdate);
+
+    const onDelete = (_ctx: EventContext, bingoItem: BingoItem) => {
+      setBingoItems(prev => prev.filter(item => item.id !== bingoItem.id));
+    };
+    conn.db.bingoItem.onDelete(onDelete);
+
+    return () => {
+      conn.db.bingoItem.removeOnInsert(onInsert);
+      conn.db.bingoItem.removeOnUpdate(onUpdate);
+      conn.db.bingoItem.removeOnDelete(onDelete);
+    };
+  }, [conn]);
+
+  return bingoItems;
+}
+
+function usePlayerItemSubjects(conn: DbConnection | null): PlayerItemSubject[] {
+  const [subjects, setSubjects] = useState<PlayerItemSubject[]>([]);
+
+  useEffect(() => {
+    if (!conn) return;
+    
+    const onInsert = (_ctx: EventContext, subject: PlayerItemSubject) => {
+      setSubjects(prev => [...prev, subject]);
+    };
+    conn.db.playerItemSubject.onInsert(onInsert);
+
+    const onDelete = (_ctx: EventContext, subject: PlayerItemSubject) => {
+      setSubjects(prev => prev.filter(s => 
+        s.bingoItemId !== subject.bingoItemId || 
+        s.playerId.toHexString() !== subject.playerId.toHexString()
+      ));
+    };
+    conn.db.playerItemSubject.onDelete(onDelete);
+
+    return () => {
+      conn.db.playerItemSubject.removeOnInsert(onInsert);
+      conn.db.playerItemSubject.removeOnDelete(onDelete);
+    };
+  }, [conn]);
+
+  return subjects;
+}
+
 function useCurrentPlayer(conn: DbConnection | null, identity: Identity | null): Player | undefined {
   const players = usePlayers(conn);
   if (!identity) return undefined;
@@ -131,7 +193,9 @@ function App() {
       subscribeToQueries(conn, [
         'SELECT * FROM player',
         'SELECT * FROM game_session',
-        'SELECT * FROM player_session'
+        'SELECT * FROM player_session',
+        'SELECT * FROM bingo_item',
+        'SELECT * FROM player_item_subject',
       ]);
     };
 
@@ -159,6 +223,8 @@ function App() {
 
   const players = usePlayers(conn);
   const gameSessions = useGameSessions(conn);
+  const bingoItems = useBingoItems(conn);
+  const playerItemSubjects = usePlayerItemSubjects(conn);
   const currentPlayer = useCurrentPlayer(conn, identity);
 
   if (!conn || !connected || !identity) {
@@ -327,6 +393,42 @@ function App() {
           
           <button type="submit">Submit</button>
         </form>
+      </div>
+      
+      <div className="bingo-items">
+        <h2>Bingo Items ({bingoItems.length})</h2>
+        {bingoItems.length === 0 ? (
+          <p>No bingo items yet</p>
+        ) : (
+          <div className="bingo-items-list">
+            {bingoItems.map((item) => {
+              const itemSubjects = playerItemSubjects.filter(s => s.bingoItemId === item.id);
+              const subjectPlayers = itemSubjects
+                .map(s => players.get(s.playerId.toHexString()))
+                .filter(p => p !== undefined) as Player[];
+              
+              return (
+                <div key={item.id} className="bingo-item">
+                  <div className="bingo-item-content">
+                    <span className="bingo-item-body">{item.body}</span>
+                    {subjectPlayers.length > 0 && (
+                      <span className="bingo-item-players">
+                        Players: {subjectPlayers.map(p => p.name || p.identity.toHexString().substring(0, 8)).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                  <button 
+                    className="delete-button"
+                    onClick={() => conn.reducers.deleteBingoItem(item.id)}
+                    title="Delete bingo item"
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
