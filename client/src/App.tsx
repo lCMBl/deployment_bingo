@@ -235,8 +235,6 @@ function App() {
         )}
       </div>
       
-      
-      
       <div className="players">
         <h2>Players</h2>
         <div className="player-list">
