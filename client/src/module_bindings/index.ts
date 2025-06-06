@@ -281,19 +281,19 @@ export class RemoteReducers {
     this.connection.offReducer("delete_bingo_item", callback);
   }
 
-  joinGame(gameSessionId: number, password: string | undefined) {
-    const __args = { gameSessionId, password };
+  joinGame(gameSessionId: number) {
+    const __args = { gameSessionId };
     let __writer = new BinaryWriter(1024);
     JoinGame.getTypeScriptAlgebraicType().serialize(__writer, __args);
     let __argsBuffer = __writer.getBuffer();
     this.connection.callReducer("join_game", __argsBuffer, this.setCallReducerFlags.joinGameFlags);
   }
 
-  onJoinGame(callback: (ctx: ReducerEventContext, gameSessionId: number, password: string | undefined) => void) {
+  onJoinGame(callback: (ctx: ReducerEventContext, gameSessionId: number) => void) {
     this.connection.onReducer("join_game", callback);
   }
 
-  removeOnJoinGame(callback: (ctx: ReducerEventContext, gameSessionId: number, password: string | undefined) => void) {
+  removeOnJoinGame(callback: (ctx: ReducerEventContext, gameSessionId: number) => void) {
     this.connection.offReducer("join_game", callback);
   }
 
@@ -345,19 +345,19 @@ export class RemoteReducers {
     this.connection.offReducer("sign_in", callback);
   }
 
-  startNewGame(name: string, password: string | undefined) {
-    const __args = { name, password };
+  startNewGame(name: string) {
+    const __args = { name };
     let __writer = new BinaryWriter(1024);
     StartNewGame.getTypeScriptAlgebraicType().serialize(__writer, __args);
     let __argsBuffer = __writer.getBuffer();
     this.connection.callReducer("start_new_game", __argsBuffer, this.setCallReducerFlags.startNewGameFlags);
   }
 
-  onStartNewGame(callback: (ctx: ReducerEventContext, name: string, password: string | undefined) => void) {
+  onStartNewGame(callback: (ctx: ReducerEventContext, name: string) => void) {
     this.connection.onReducer("start_new_game", callback);
   }
 
-  removeOnStartNewGame(callback: (ctx: ReducerEventContext, name: string, password: string | undefined) => void) {
+  removeOnStartNewGame(callback: (ctx: ReducerEventContext, name: string) => void) {
     this.connection.offReducer("start_new_game", callback);
   }
 

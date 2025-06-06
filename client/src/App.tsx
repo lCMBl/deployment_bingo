@@ -348,6 +348,15 @@ function App() {
             ))}
           </div>
         )}
+        <button 
+          className="create-game-button"
+          onClick={() => {
+            const gameName = `Game Session ${gameSessions.length + 1}`;
+            conn.reducers.startNewGame(gameName);
+          }}
+        >
+          Create New Game Session
+        </button>
       </div>
       
       <div className="new-bingo-item">

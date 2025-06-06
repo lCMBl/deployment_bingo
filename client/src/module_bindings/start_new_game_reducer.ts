@@ -33,7 +33,6 @@ import {
 
 export type StartNewGame = {
   name: string,
-  password: string | undefined,
 };
 
 /**
@@ -47,7 +46,6 @@ export namespace StartNewGame {
   export function getTypeScriptAlgebraicType(): AlgebraicType {
     return AlgebraicType.createProductType([
       new ProductTypeElement("name", AlgebraicType.createStringType()),
-      new ProductTypeElement("password", AlgebraicType.createOptionType(AlgebraicType.createStringType())),
     ]);
   }
 

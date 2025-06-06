@@ -33,7 +33,6 @@ import {
 
 export type JoinGame = {
   gameSessionId: number,
-  password: string | undefined,
 };
 
 /**
@@ -47,7 +46,6 @@ export namespace JoinGame {
   export function getTypeScriptAlgebraicType(): AlgebraicType {
     return AlgebraicType.createProductType([
       new ProductTypeElement("gameSessionId", AlgebraicType.createU32Type()),
-      new ProductTypeElement("password", AlgebraicType.createOptionType(AlgebraicType.createStringType())),
     ]);
   }
 

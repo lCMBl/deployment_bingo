@@ -35,10 +35,10 @@ import { BoardItem as __BoardItem } from "./board_item_type";
 export type GameSession = {
   id: number,
   name: string,
-  password: string | undefined,
   active: boolean,
   winner: Identity | undefined,
   boardItems: __BoardItem[],
+  started: Timestamp,
 };
 
 /**
@@ -53,10 +53,10 @@ export namespace GameSession {
     return AlgebraicType.createProductType([
       new ProductTypeElement("id", AlgebraicType.createU32Type()),
       new ProductTypeElement("name", AlgebraicType.createStringType()),
-      new ProductTypeElement("password", AlgebraicType.createOptionType(AlgebraicType.createStringType())),
       new ProductTypeElement("active", AlgebraicType.createBoolType()),
       new ProductTypeElement("winner", AlgebraicType.createOptionType(AlgebraicType.createIdentityType())),
       new ProductTypeElement("boardItems", AlgebraicType.createArrayType(__BoardItem.getTypeScriptAlgebraicType())),
+      new ProductTypeElement("started", AlgebraicType.createTimestampType()),
     ]);
   }
 

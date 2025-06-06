@@ -23,11 +23,11 @@ pub struct GameSession {
     #[auto_inc]
     id: u32,
     name: String,
-    password: Option<String>, // need to hex encode / hash?
     #[index(btree)]
     active: bool,
     winner: Option<Identity>, // the player that won this game
     board_items: Vec<BoardItem>,
+    started: Timestamp,
 }
 
 #[table(name = player_session, public)]
@@ -137,28 +137,28 @@ fn validate_name(name: String) -> Result<String, String> {
 // ----------
 
 #[reducer]
-pub fn start_new_game(ctx: &ReducerContext, name: String, password: Option<String>) -> Result<(), String> {
+pub fn start_new_game(ctx: &ReducerContext, name: String) -> Result<(), String> {
     let name = validate_name(name)?;
     let new_game = ctx.db.game_session().insert(GameSession {
-        id: 0, name, password: password.clone(), active: true, winner: None, board_items: vec![] 
+        id: 0, name, active: true, winner: None, board_items: vec![] , started: ctx.timestamp
     });
     // add the current player to the game automatically
-    join_game(ctx, new_game.id, password)?;
+    join_game(ctx, new_game.id)?;
     Ok(())
 }
 
 #[reducer]
-pub fn join_game(ctx: &ReducerContext, game_session_id: u32, password: Option<String>) -> Result<(), String> {
-    if let Some(game_session) = ctx.db.game_session().id().find(game_session_id) {
+pub fn join_game(ctx: &ReducerContext, game_session_id: u32) -> Result<(), String> {
+    // if let Some(game_session) = ctx.db.game_session().id().find(game_session_id) {
         // check password
-        if is_correct_password(game_session.password, password) {
-            // make the player's board
-            create_bingo_board(ctx, ctx.sender, game_session_id)?;
+        // if is_correct_password(game_session.password, password) {
+    // make the player's board
+    create_bingo_board(ctx, ctx.sender, game_session_id)?;
 
-            // join the session
-            ctx.db.player_session().insert(PlayerSession { player_id: ctx.sender, game_session_id });
-        }
-    }
+    // join the session
+    ctx.db.player_session().insert(PlayerSession { player_id: ctx.sender, game_session_id });
+        // }
+    // }
 
     Ok(())
 }
