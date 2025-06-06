@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { DbConnection, type ErrorContext, type EventContext, Player, GameSession, BingoItem, PlayerItemSubject } from './module_bindings';
+import { DbConnection, type ErrorContext, type EventContext, Player, GameSession, BingoItem, PlayerItemSubject, PlayerSession } from './module_bindings';
 import { Identity } from '@clockworklabs/spacetimedb-sdk';
 
 export type PlayerStatus = {
@@ -140,6 +140,34 @@ function usePlayerItemSubjects(conn: DbConnection | null): PlayerItemSubject[] {
   return subjects;
 }
 
+function usePlayerSessions(conn: DbConnection | null): PlayerSession[] {
+  const [playerSessions, setPlayerSessions] = useState<PlayerSession[]>([]);
+
+  useEffect(() => {
+    if (!conn) return;
+    
+    const onInsert = (_ctx: EventContext, playerSession: PlayerSession) => {
+      setPlayerSessions(prev => [...prev, playerSession]);
+    };
+    conn.db.playerSession.onInsert(onInsert);
+
+    const onDelete = (_ctx: EventContext, playerSession: PlayerSession) => {
+      setPlayerSessions(prev => prev.filter(ps => 
+        ps.gameSessionId !== playerSession.gameSessionId || 
+        ps.playerId.toHexString() !== playerSession.playerId.toHexString()
+      ));
+    };
+    conn.db.playerSession.onDelete(onDelete);
+
+    return () => {
+      conn.db.playerSession.removeOnInsert(onInsert);
+      conn.db.playerSession.removeOnDelete(onDelete);
+    };
+  }, [conn]);
+
+  return playerSessions;
+}
+
 function useCurrentPlayer(conn: DbConnection | null, identity: Identity | null): Player | undefined {
   const players = usePlayers(conn);
   if (!identity) return undefined;
@@ -196,6 +224,7 @@ function App() {
         'SELECT * FROM player_session',
         'SELECT * FROM bingo_item',
         'SELECT * FROM player_item_subject',
+        `SELECT * FROM bingo_board WHERE player_id = '${identity.toHexString()}'`,
       ]);
     };
 
@@ -225,6 +254,7 @@ function App() {
   const gameSessions = useGameSessions(conn);
   const bingoItems = useBingoItems(conn);
   const playerItemSubjects = usePlayerItemSubjects(conn);
+  const playerSessions = usePlayerSessions(conn);
   const currentPlayer = useCurrentPlayer(conn, identity);
 
   if (!conn || !connected || !identity) {
@@ -337,15 +367,46 @@ function App() {
           <p>No game sessions yet</p>
         ) : (
           <div className="sessions-list">
-            {gameSessions.map((session) => (
-              <div key={session.id} className="session-item">
-                <h3>{session.name}</h3>
-                <p>Status: {session.active ? 'Active' : 'Completed'}</p>
-                {session.winner && (
-                  <p>Winner: {players.get(session.winner.toHexString())?.name || 'Unknown'}</p>
-                )}
-              </div>
-            ))}
+            {gameSessions.map((session) => {
+              const sessionPlayerSessions = playerSessions.filter(ps => ps.gameSessionId === session.id);
+              const playerCount = sessionPlayerSessions.length;
+              const isPlayerInGame = sessionPlayerSessions.some(ps => ps.playerId.toHexString() === identity.toHexString());
+              
+              let buttonAction: 'open' | 'join' | 'view';
+              let buttonText: string;
+              
+              if (isPlayerInGame) {
+                buttonAction = 'open';
+                buttonText = 'Open';
+              } else if (session.active) {
+                buttonAction = 'join';
+                buttonText = 'Join';
+              } else {
+                buttonAction = 'view';
+                buttonText = 'View';
+              }
+              
+              return (
+                <div key={session.id} className="session-item">
+                  <div className="session-info">
+                    <h3>{session.name}</h3>
+                    <p>Status: {session.active ? 'Active' : 'Completed'}</p>
+                    <p>Players: {playerCount}</p>
+                    {session.winner && (
+                      <p>Winner: {players.get(session.winner.toHexString())?.name || 'Unknown'}</p>
+                    )}
+                  </div>
+                  <button 
+                    className={`session-action-button session-action-${buttonAction}`}
+                    onClick={() => {
+                      console.log(`${buttonText} game session: ${session.id}`);
+                    }}
+                  >
+                    {buttonText}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
         <button 
