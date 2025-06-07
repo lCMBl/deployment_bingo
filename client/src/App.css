@@ -101,6 +101,7 @@
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
 }
 
 .players h1,
@@ -118,6 +119,8 @@
   flex-direction: column;
   gap: 0.5rem;
   text-align: left;
+  margin-top: 1rem;
+  padding-top: 1rem;
 }
 
 .player-item {
@@ -149,6 +152,8 @@
   gap: 1rem;
   text-align: left;
   margin-bottom: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
 }
 
 .session-item {
@@ -253,6 +258,48 @@
 
 .create-game-button:disabled:hover {
   background-color: #cccccc;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+}
+
+.pagination-controls button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s, opacity 0.3s;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pagination-controls button:disabled {
+  background-color: #6c757d;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+  min-width: 100px;
+  text-align: center;
 }
 
 /* New Bingo Item Form */

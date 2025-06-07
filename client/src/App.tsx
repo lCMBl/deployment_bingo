@@ -187,6 +187,7 @@ function App() {
   const [conn, setConn] = useState<DbConnection | null>(null);
   const [currentView, setCurrentView] = useState<'main' | 'game'>('main');
   const [currentGameSessionId, setCurrentGameSessionId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const onSubmitNewName = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -391,52 +392,91 @@ function App() {
         {gameSessions.length === 0 ? (
           <p>No game sessions yet</p>
         ) : (
-          <div className="sessions-list">
-            {gameSessions.map((session) => {
-              const sessionPlayerSessions = playerSessions.filter(ps => ps.gameSessionId === session.id);
-              const playerCount = sessionPlayerSessions.length;
-              const isPlayerInGame = sessionPlayerSessions.some(ps => ps.playerId.toHexString() === identity.toHexString());
+          <>
+            <div className="sessions-list">
+              {(() => {
+                const itemsPerPage = 3;
+                const totalPages = Math.ceil(gameSessions.length / itemsPerPage);
+                const startIndex = currentPage * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedSessions = gameSessions.slice(startIndex, endIndex);
+                
+                // Reset to last page if current page is out of bounds
+                if (currentPage >= totalPages && totalPages > 0) {
+                  setCurrentPage(totalPages - 1);
+                }
+                
+                return paginatedSessions.map((session) => {
+                  const sessionPlayerSessions = playerSessions.filter(ps => ps.gameSessionId === session.id);
+                  const playerCount = sessionPlayerSessions.length;
+                  const isPlayerInGame = sessionPlayerSessions.some(ps => ps.playerId.toHexString() === identity.toHexString());
+                  
+                  let buttonAction: 'open' | 'join' | 'view';
+                  let buttonText: string;
+                  
+                  if (isPlayerInGame) {
+                    buttonAction = 'open';
+                    buttonText = 'Open';
+                  } else if (session.active) {
+                    buttonAction = 'join';
+                    buttonText = 'Join';
+                  } else {
+                    buttonAction = 'view';
+                    buttonText = 'View';
+                  }
+                  
+                  return (
+                    <div key={session.id} className="session-item">
+                      <div className="session-info">
+                        <h3>{session.name}</h3>
+                        <p>Status: {session.active ? 'Active' : 'Completed'}</p>
+                        <p>Players: {playerCount}</p>
+                        {session.winner && (
+                          <p>Winner: {players.get(session.winner.toHexString())?.name || 'Unknown'}</p>
+                        )}
+                      </div>
+                      <button 
+                        className={`session-action-button session-action-${buttonAction}`}
+                        onClick={() => {
+                          if (buttonAction === 'join') {
+                            conn.reducers.joinGame(session.id);
+                          }
+                          setCurrentGameSessionId(session.id);
+                          setCurrentView('game');
+                        }}
+                      >
+                        {buttonText}
+                      </button>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+            {(() => {
+              const itemsPerPage = 3;
+              const totalPages = Math.ceil(gameSessions.length / itemsPerPage);
               
-              let buttonAction: 'open' | 'join' | 'view';
-              let buttonText: string;
-              
-              if (isPlayerInGame) {
-                buttonAction = 'open';
-                buttonText = 'Open';
-              } else if (session.active) {
-                buttonAction = 'join';
-                buttonText = 'Join';
-              } else {
-                buttonAction = 'view';
-                buttonText = 'View';
-              }
-              
-              return (
-                <div key={session.id} className="session-item">
-                  <div className="session-info">
-                    <h3>{session.name}</h3>
-                    <p>Status: {session.active ? 'Active' : 'Completed'}</p>
-                    <p>Players: {playerCount}</p>
-                    {session.winner && (
-                      <p>Winner: {players.get(session.winner.toHexString())?.name || 'Unknown'}</p>
-                    )}
-                  </div>
+              return totalPages > 1 ? (
+                <div className="pagination-controls">
                   <button 
-                    className={`session-action-button session-action-${buttonAction}`}
-                    onClick={() => {
-                      if (buttonAction === 'join') {
-                        conn.reducers.joinGame(session.id);
-                      }
-                      setCurrentGameSessionId(session.id);
-                      setCurrentView('game');
-                    }}
+                    onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                    disabled={currentPage === 0}
                   >
-                    {buttonText}
+                    Previous
+                  </button>
+                  <span className="pagination-info">
+                    Page {currentPage + 1} of {totalPages}
+                  </span>
+                  <button 
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                    disabled={currentPage === totalPages - 1}
+                  >
+                    Next
                   </button>
                 </div>
-              );
-            })}
-          </div>
+              ) : null;
+            })()}
+          </>
         )}
         <input
             type="text"
