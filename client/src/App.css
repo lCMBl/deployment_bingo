@@ -139,7 +139,7 @@
 }
 
 .status-indicator.offline {
-  color: #dc3545;
+  color: #887e7f;
 }
 
 /* Game Sessions */
@@ -243,6 +243,16 @@
 
 .create-game-button:hover {
   background-color: #218838;
+}
+
+.create-game-button:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+}
+
+.create-game-button:disabled:hover {
+  background-color: #cccccc;
 }
 
 /* New Bingo Item Form */

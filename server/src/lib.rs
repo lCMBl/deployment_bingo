@@ -401,8 +401,29 @@ pub fn sign_in(ctx: &ReducerContext, password: String) {
     }
 }
 
+#[reducer(client_connected)]
+// Called when a client connects to a SpacetimeDB database server
+pub fn client_connected(ctx: &ReducerContext) {
+    if let Some(player) = ctx.db.player().identity().find(ctx.sender) {
+        // If this is a returning player, i.e. we already have a `Player` with this `Identity`,
+        // set `online: true`, but leave `name` and `identity` unchanged.
+        ctx.db.player().identity().update(Player { online: true, ..player });
+    }
+}
+
+#[reducer(client_disconnected)]
+// Called when a client disconnects from SpacetimeDB database server
+pub fn identity_disconnected(ctx: &ReducerContext) {
+    if let Some(player) = ctx.db.player().identity().find(ctx.sender) {
+        ctx.db.player().identity().update(Player { online: false, ..player });
+    } else {
+        // This branch should be unreachable,
+        // as it doesn't make sense for a client to disconnect without connecting first.
+        log::warn!("Disconnect event for unknown player with identity {:?}", ctx.sender);
+    }
+}
+
 // TODO
-// move password auth to logging in (don't let randos use our bingo game.)
 // --server http://localhost:6666
 // spacetime publish --project-path server  deployment-bingo
 // spacetime call --server http://localhost:6666 deployment-bingo submit_new_bingo_item "Someone curses PNNL"

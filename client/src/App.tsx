@@ -178,6 +178,7 @@ function useCurrentPlayer(conn: DbConnection | null, identity: Identity | null):
 function App() {
   const [password, setPassword] = useState('');
   const [newName, setNewName] = useState('');
+  const [newGameSessionName, setNewGameSessionName] = useState('');
   const [settingName, setSettingName] = useState(false);
   const [newBingoItem, setNewBingoItem] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
@@ -376,7 +377,9 @@ function App() {
         <div className="player-list">
           {Array.from(players.values()).map((player) => (
             <div key={player.identity.toHexString()} className="player-item">
-              <span className={`status-indicator ${player.online ? 'online' : 'offline'}`}>●</span>
+              <span className={`status-indicator ${player.online ? 'online' : 'offline'}`}>
+                {player.online ? '●' : '○'}
+              </span>
               <span>{player.name || player.identity.toHexString().substring(0, 8)}</span>
             </div>
           ))}
@@ -435,12 +438,22 @@ function App() {
             })}
           </div>
         )}
+        <input
+            type="text"
+            placeholder="Enter game session name (min 4 chars)"
+            value={newGameSessionName}
+            onChange={e => setNewGameSessionName(e.target.value)}
+            minLength={4}
+            required
+            style={{ marginBottom: '0.5em', width: '60%' }}
+          />
         <button 
           className="create-game-button"
           onClick={() => {
-            const gameName = `Game Session ${gameSessions.length + 1}`;
-            conn.reducers.startNewGame(gameName);
+            conn.reducers.startNewGame(newGameSessionName);
+            setNewGameSessionName('');
           }}
+          disabled={newGameSessionName.length < 4}
         >
           Create New Game Session
         </button>
