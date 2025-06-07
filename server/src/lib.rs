@@ -424,6 +424,11 @@ pub fn identity_disconnected(ctx: &ReducerContext) {
 }
 
 // TODO
+// pagination of bingo items
+// center login prompt
+// pull login details from .env file
+// app coloring
+
 // --server http://localhost:6666
 // spacetime publish --project-path server  deployment-bingo
 // spacetime call --server http://localhost:6666 deployment-bingo submit_new_bingo_item "Someone curses PNNL"

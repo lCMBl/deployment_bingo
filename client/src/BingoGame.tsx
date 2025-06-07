@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DbConnection, type EventContext, BingoBoard, GameSession, Player, PlayerSession, BoardItem } from './module_bindings';
 import { Identity } from '@clockworklabs/spacetimedb-sdk';
 
