@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  spacetimedb:
+    image: clockworklabs/spacetime
+    command: start
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    pull_policy: always
+    networks:
+      - bingo-network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - spacetimedb
+    restart: unless-stopped
+    networks:
+      - bingo-network
+
+networks:
+  bingo-network:
+    driver: bridge

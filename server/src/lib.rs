@@ -282,8 +282,8 @@ pub fn cast_check_off_vote(ctx: &ReducerContext, game_session_id: u32, bingo_ite
             }
             ctx.db.game_session().id().update(game_session);
             // check for game winner
-            let boards: Vec<BingoBoard> = ctx.db.bingo_board().idx_session_player().filter((game_session_id, ctx.sender)).collect();
-            if let Some(board) = boards.first() {
+            let boards: Vec<BingoBoard> = ctx.db.bingo_board().game_session_id().filter(game_session_id).collect();
+            for board in boards {
                 check_for_winner(ctx, board.id)?;
             }
         }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { DbConnection, type ErrorContext, type EventContext, Player, GameSession, BingoItem, PlayerItemSubject, PlayerSession } from './module_bindings';
 import { Identity } from '@clockworklabs/spacetimedb-sdk';
+import BingoGame from './BingoGame';
 
 export type PlayerStatus = {
   name: string;
@@ -183,6 +184,8 @@ function App() {
   const [connected, setConnected] = useState<boolean>(false);
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [conn, setConn] = useState<DbConnection | null>(null);
+  const [currentView, setCurrentView] = useState<'main' | 'game'>('main');
+  const [currentGameSessionId, setCurrentGameSessionId] = useState<number | null>(null);
 
   const onSubmitNewName = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -321,6 +324,25 @@ function App() {
 
   const name = currentPlayer.name || identity.toHexString().substring(0, 8);
 
+  // Show game view if selected
+  if (currentView === 'game' && currentGameSessionId !== null) {
+    return (
+      <BingoGame
+        conn={conn}
+        gameSessionId={currentGameSessionId}
+        currentPlayer={currentPlayer}
+        players={players}
+        gameSessions={gameSessions}
+        playerSessions={playerSessions}
+        onBack={() => {
+          setCurrentView('main');
+          setCurrentGameSessionId(null);
+        }}
+      />
+    );
+  }
+
+  // Show main view
   return (
     <div className="App">
       <div className="profile">
@@ -399,7 +421,11 @@ function App() {
                   <button 
                     className={`session-action-button session-action-${buttonAction}`}
                     onClick={() => {
-                      console.log(`${buttonText} game session: ${session.id}`);
+                      if (buttonAction === 'join') {
+                        conn.reducers.joinGame(session.id);
+                      }
+                      setCurrentGameSessionId(session.id);
+                      setCurrentView('game');
                     }}
                   >
                     {buttonText}
