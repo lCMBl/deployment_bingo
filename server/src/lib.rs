@@ -1,5 +1,6 @@
 use std::{collections::{HashMap, HashSet}, time::Duration};
 
+use argon2::Error;
 use spacetimedb::{rand::seq::SliceRandom, reducer, table, Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration, Timestamp};
 
 mod password;
@@ -191,18 +192,6 @@ pub fn join_game(ctx: &ReducerContext, game_session_id: u32) -> Result<(), Strin
     // }
 
     Ok(())
-}
-
-fn is_correct_password(target_pwd: Option<String>, submitted_pwd: Option<String>) -> bool {
-    if let Some(t_pwd) = target_pwd {
-        if let Some(sub_pwd) = submitted_pwd {
-            t_pwd == sub_pwd
-        } else {
-            false
-        }
-    } else {
-        true
-    }
 }
 
 // ----------
@@ -428,10 +417,14 @@ pub fn sign_in(ctx: &ReducerContext, name: String, password: String) {
     }
 }
 
-// #[reducer]
-// pub fn create_player() {
-
-// }
+#[reducer]
+pub fn create_player(ctx: &ReducerContext, name: String, password: String) -> Result<(), Error> {
+    // hash the player's password
+    let password_hash = hash_password(&password)?;
+    // insert the new player
+    ctx.db.player().insert(Player { id: 0, identity: ctx.sender, name, password: password_hash, online: true });
+    Ok(())
+}
 
 
 #[reducer]
