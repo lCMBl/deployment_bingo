@@ -1,10 +1,12 @@
 use argon2::{self, Config};
-use rand::Rng;
+use quad_rand as qrand;
 
 /// Generate a cryptographically secure random salt
 fn generate_salt() -> [u8; 16] {
     let mut salt = [0u8; 16];
-    rand::rng().fill(&mut salt[..]);
+    for i in 0..16 {
+        salt[i] = qrand::gen_range(0u8, u8::MAX);
+    }
     salt
 }
 

@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, time::Duration};
 
 use spacetimedb::{rand::seq::SliceRandom, reducer, table, Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration, Timestamp};
 
@@ -10,8 +10,8 @@ pub struct Player {
     #[primary_key]
     #[auto_inc]
     id: u32,
-    #[index(btree)]
-    identity: Option<Identity>,
+    #[unique]
+    identity: Identity,
     #[index(btree)]
     name: String,
     password: String,
@@ -23,6 +23,7 @@ pub struct PlayerInvite {
     #[primary_key]
     #[auto_inc]
     id: u32,
+    #[unique]
     token: String,
     used: bool,
 }
@@ -147,7 +148,7 @@ pub struct RemoveExpiredVotesTimer {
 pub fn set_name(ctx: &ReducerContext, name: String) -> Result<(), String> {
     let name = validate_name(name)?;
     if let Some(player) = ctx.db.player().identity().find(ctx.sender) {
-        ctx.db.player().identity().update(Player { name: Some(name), ..player });
+        ctx.db.player().id().update(Player { name, ..player });
         Ok(())
     } else {
         Err("Cannot set name for unknown player".to_string())
@@ -415,12 +416,12 @@ pub fn check_for_winner(ctx: &ReducerContext, board_id: u32) -> Result<(), Strin
 pub fn sign_in(ctx: &ReducerContext, name: String, password: String) {
     
     // find the player by name.
-    for player in ctx.db.player().name().filter(name) {
+    for player in ctx.db.player().name().filter(&name) {
         // check if the player has the right password
         if let Ok(password_match) = verify_password(&player.password, &password) {
             if password_match {
                 // then this is our player, log them in.
-                ctx.db.player().id().update(Player { online: true, identity: Some(ctx.sender), ..player });
+                ctx.db.player().id().update(Player { online: true, identity: ctx.sender, ..player });
                 break;
             }
         }
@@ -433,10 +434,18 @@ pub fn sign_in(ctx: &ReducerContext, name: String, password: String) {
 // }
 
 
-// #[reducer]
-// pub fn create_player_invite() {
-
-// }
+#[reducer]
+pub fn create_player_invite_link(ctx: &ReducerContext, token: String) {
+    // create the player invite record
+    let invite = ctx.db.player_invite().insert(PlayerInvite { id: 0, token, used: false });
+    // create the expiration timer
+    let expire_time = ctx.timestamp + TimeDuration::from_duration(Duration::from_secs(3600));
+    ctx.db.remove_expired_invites_timer().insert(RemoveExpiredInvitesTimer {
+        scheduled_id: 0,
+        invite_id: invite.id,
+        scheduled_at: expire_time.into()
+    });
+}
 
 #[reducer]
 pub fn remove_expired_player_invites(ctx: &ReducerContext, timer: RemoveExpiredInvitesTimer) {
