@@ -2,12 +2,41 @@ use std::collections::{HashMap, HashSet};
 
 use spacetimedb::{rand::seq::SliceRandom, reducer, table, Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration, Timestamp};
 
+mod password;
+use password::{hash_password, verify_password};
+
 #[table(name = player, public)]
 pub struct Player {
     #[primary_key]
-    identity: Identity,
-    name: Option<String>,
+    #[auto_inc]
+    id: u32,
+    #[index(btree)]
+    identity: Option<Identity>,
+    #[index(btree)]
+    name: String,
+    password: String,
     online: bool,
+}
+
+#[table(name = player_invite, public)]
+pub struct PlayerInvite {
+    #[primary_key]
+    #[auto_inc]
+    id: u32,
+    token: String,
+    used: bool,
+}
+
+#[table(
+    name = remove_expired_invites_timer,
+    scheduled(remove_expired_player_invites)
+)]
+pub struct RemoveExpiredInvitesTimer {
+    #[primary_key]
+    #[auto_inc]
+    scheduled_id: u64,
+    invite_id: u32,
+    scheduled_at: ScheduleAt,
 }
 
 #[derive(SpacetimeType)]
@@ -383,7 +412,11 @@ pub fn check_for_winner(ctx: &ReducerContext, board_id: u32) -> Result<(), Strin
 // ------------
 
 #[reducer]
-pub fn sign_in(ctx: &ReducerContext, password: String) {
+pub fn sign_in(ctx: &ReducerContext, name: String, password: String) {
+    
+    // find the player by name.
+    if let Some(player) = pl
+    
     if is_correct_password(Some("vapor-core".to_string()), Some(password)) {
         if let Some(player) = ctx.db.player().identity().find(ctx.sender) {
             // If this is a returning user, i.e. we already have a `User` with this `Identity`,
@@ -400,6 +433,28 @@ pub fn sign_in(ctx: &ReducerContext, password: String) {
         }
     }
 }
+
+// #[reducer]
+// pub fn create_player() {
+
+// }
+
+
+// #[reducer]
+// pub fn create_player_invite() {
+
+// }
+
+#[reducer]
+pub fn remove_expired_player_invites(ctx: &ReducerContext, timer: RemoveExpiredInvitesTimer) {
+    // get the invite for the expired timer, and delete it.
+    if let Some(invite) = ctx.db.player_invite().id().find(timer.invite_id) {
+        ctx.db.player_invite().id().delete(invite.id);
+    }
+    // then, delete the timer itself.
+    ctx.db.remove_expired_invites_timer().delete(timer);
+}
+// -------------
 
 #[reducer(client_connected)]
 // Called when a client connects to a SpacetimeDB database server
@@ -423,7 +478,15 @@ pub fn identity_disconnected(ctx: &ReducerContext) {
     }
 }
 
+
 // TODO
+// 0. automatic running of the spacetime publish command on startup (copy spacetime module to container, and run spacetime publish from inside container? just do manually through ssh or even remotely?)
+// 1. credentials not saved/different id created on joining? (like incognito mode)
+
+// 3. window title name
+// 4. need to have proper auth, or at least a way to associate players
+// with a different connection. Identity is not reliable. 
+
 // pagination of bingo items
 // center login prompt
 // pull login details from .env file

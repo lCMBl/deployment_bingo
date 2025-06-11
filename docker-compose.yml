@@ -3,9 +3,12 @@ version: '3.8'
 services:
   spacetimedb:
     image: clockworklabs/spacetime
-    command: start
+    command: start --data-dir=/stdb
+    user: root
     ports:
       - "3000:3000"
+    volumes:
+      - spacetimedb-data:/stdb
     restart: unless-stopped
     pull_policy: always
     networks:
@@ -26,3 +29,6 @@ services:
 networks:
   bingo-network:
     driver: bridge
+
+volumes:
+  spacetimedb-data:
