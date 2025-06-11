@@ -435,7 +435,7 @@ pub fn sign_in(ctx: &ReducerContext, name: String, password: String) {
 
 
 #[reducer]
-pub fn create_player_invite_link(ctx: &ReducerContext, token: String) {
+pub fn create_player_invite(ctx: &ReducerContext, token: String) {
     // create the player invite record
     let invite = ctx.db.player_invite().insert(PlayerInvite { id: 0, token, used: false });
     // create the expiration timer
@@ -445,6 +445,21 @@ pub fn create_player_invite_link(ctx: &ReducerContext, token: String) {
         invite_id: invite.id,
         scheduled_at: expire_time.into()
     });
+}
+
+#[reducer]
+pub fn use_player_invite(ctx: &ReducerContext, token: String) -> Result<(), String> {
+    if let Some(invite) = ctx.db.player_invite().token().find(&token) {
+        if !invite.used {
+            // set the invite to used.
+            ctx.db.player_invite().id().update(PlayerInvite { used: true, ..invite});
+            Ok(())
+        } else {
+            Err(format!("Invite for token {} has already been used.", &token))
+        }
+    } else {
+        Err(format!("No invite found for token: {}", &token))
+    }
 }
 
 #[reducer]
