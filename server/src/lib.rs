@@ -415,21 +415,14 @@ pub fn check_for_winner(ctx: &ReducerContext, board_id: u32) -> Result<(), Strin
 pub fn sign_in(ctx: &ReducerContext, name: String, password: String) {
     
     // find the player by name.
-    if let Some(player) = pl
-    
-    if is_correct_password(Some("vapor-core".to_string()), Some(password)) {
-        if let Some(player) = ctx.db.player().identity().find(ctx.sender) {
-            // If this is a returning user, i.e. we already have a `User` with this `Identity`,
-            // set `online: true`, but leave `name` and `identity` unchanged.
-            ctx.db.player().identity().update(Player { online: true, ..player });
-        } else {
-            // If this is a new user, create a `User` row for the `Identity`,
-            // which is online, but hasn't set a name.
-            ctx.db.player().insert(Player {
-                name: None,
-                identity: ctx.sender,
-                online: true,
-            });
+    for player in ctx.db.player().name().filter(name) {
+        // check if the player has the right password
+        if let Ok(password_match) = verify_password(&player.password, &password) {
+            if password_match {
+                // then this is our player, log them in.
+                ctx.db.player().id().update(Player { online: true, identity: Some(ctx.sender), ..player });
+                break;
+            }
         }
     }
 }
