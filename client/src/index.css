@@ -11,15 +11,15 @@
 :root {
   --theme-color: #547792;
   --theme-color-contrast: #ECEFCA;
-  --textbox-color: #94B4C1;
-  color-scheme: light dark;
+  --textbox-color: #213448;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --theme-color: #94B4C1;
+    --theme-color: #547792;
     --theme-color-contrast: #213448;
-    --textbox-color: #213448;
+    --textbox-color: #ECEFCA;
   }
 }
 
@@ -29,6 +29,8 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  background-color: #213448;
+  color: #ECEFCA;
 }
 
 body {
@@ -67,6 +69,8 @@ textarea {
   font-weight: 600;
   letter-spacing: 0.1px;
   padding: 0.5rem 0.75rem;
+  background-color: var(--textbox-color);
+  color: var(--theme-color-contrast);
 }
 
 input:focus,
