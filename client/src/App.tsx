@@ -265,7 +265,7 @@ function App() {
 
     setConn(
       DbConnection.builder()
-        .withUri('ws://localhost:3030')
+        .withUri('ws://api.everbingo.win')
         .withModuleName('deployment-bingo')
         .withToken(localStorage.getItem('auth_token') || '')
         .onConnect(onConnect)
