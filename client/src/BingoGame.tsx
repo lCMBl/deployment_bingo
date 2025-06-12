@@ -112,7 +112,7 @@ function BingoGame({ conn, gameSessionId, currentPlayer, players, gameSessions, 
         <div className="game-player-list">
           {playersInGame.map(player => (
             <div key={player.identity.toHexString()} className="game-player-item">
-              <span className={`status-indicator ${player.online ? 'online' : 'offline'}`}>●</span>
+              <span className={`status-indicator ${player.online ? 'online' : 'offline'}`}>{player.online ? '●' : '○'}</span>
               <span>{player.name || player.identity.toHexString().substring(0, 8)}</span>
             </div>
           ))}
