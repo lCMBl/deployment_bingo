@@ -11,4 +11,4 @@ You should now be able to visit the server frontend at [http://localhost:5173/](
 ## Known Issues
 - Something about docker doesn't like how the spacetime db credentials are being stored. I haven't been able to figure it out yet, but basically every time you reload the page you have to log in again.
 - No way to change password. Really the entire auth system is very janky.
-
+- does item voting take into account that not everyone has the same items on their board? Nope.
