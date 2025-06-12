@@ -31,32 +31,32 @@ import {
   deepEqual,
 } from "@clockworklabs/spacetimedb-sdk";
 
-export type SignIn = {
-  name: string,
-  password: string,
+import { RemoveExpiredInvitesTimer as __RemoveExpiredInvitesTimer } from "./remove_expired_invites_timer_type";
+
+export type RemoveExpiredPlayerInvites = {
+  timer: __RemoveExpiredInvitesTimer,
 };
 
 /**
  * A namespace for generated helper functions.
  */
-export namespace SignIn {
+export namespace RemoveExpiredPlayerInvites {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
   */
   export function getTypeScriptAlgebraicType(): AlgebraicType {
     return AlgebraicType.createProductType([
-      new ProductTypeElement("name", AlgebraicType.createStringType()),
-      new ProductTypeElement("password", AlgebraicType.createStringType()),
+      new ProductTypeElement("timer", __RemoveExpiredInvitesTimer.getTypeScriptAlgebraicType()),
     ]);
   }
 
-  export function serialize(writer: BinaryWriter, value: SignIn): void {
-    SignIn.getTypeScriptAlgebraicType().serialize(writer, value);
+  export function serialize(writer: BinaryWriter, value: RemoveExpiredPlayerInvites): void {
+    RemoveExpiredPlayerInvites.getTypeScriptAlgebraicType().serialize(writer, value);
   }
 
-  export function deserialize(reader: BinaryReader): SignIn {
-    return SignIn.getTypeScriptAlgebraicType().deserialize(reader);
+  export function deserialize(reader: BinaryReader): RemoveExpiredPlayerInvites {
+    return RemoveExpiredPlayerInvites.getTypeScriptAlgebraicType().deserialize(reader);
   }
 
 }

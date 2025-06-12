@@ -31,8 +31,10 @@ import {
   deepEqual,
 } from "@clockworklabs/spacetimedb-sdk";
 export type Player = {
+  id: number,
   identity: Identity,
-  name: string | undefined,
+  name: string,
+  password: string,
   online: boolean,
 };
 
@@ -46,8 +48,10 @@ export namespace Player {
   */
   export function getTypeScriptAlgebraicType(): AlgebraicType {
     return AlgebraicType.createProductType([
+      new ProductTypeElement("id", AlgebraicType.createU32Type()),
       new ProductTypeElement("identity", AlgebraicType.createIdentityType()),
-      new ProductTypeElement("name", AlgebraicType.createOptionType(AlgebraicType.createStringType())),
+      new ProductTypeElement("name", AlgebraicType.createStringType()),
+      new ProductTypeElement("password", AlgebraicType.createStringType()),
       new ProductTypeElement("online", AlgebraicType.createBoolType()),
     ]);
   }

@@ -6,7 +6,7 @@ services:
     command: start --data-dir=/stdb
     user: root
     ports:
-      - "3000:3000"
+      - "3030:3000"
     volumes:
       - spacetimedb-data:/stdb
     restart: unless-stopped
@@ -17,9 +17,14 @@ services:
   client:
     build:
       context: ./client
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
     depends_on:
       - spacetimedb
     restart: unless-stopped

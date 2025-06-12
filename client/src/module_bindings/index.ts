@@ -36,12 +36,22 @@ import { CastCheckOffVote } from "./cast_check_off_vote_reducer.ts";
 export { CastCheckOffVote };
 import { CheckForWinner } from "./check_for_winner_reducer.ts";
 export { CheckForWinner };
+import { ClientConnected } from "./client_connected_reducer.ts";
+export { ClientConnected };
 import { CreateBingoBoard } from "./create_bingo_board_reducer.ts";
 export { CreateBingoBoard };
+import { CreatePlayer } from "./create_player_reducer.ts";
+export { CreatePlayer };
+import { CreatePlayerInvite } from "./create_player_invite_reducer.ts";
+export { CreatePlayerInvite };
 import { DeleteBingoItem } from "./delete_bingo_item_reducer.ts";
 export { DeleteBingoItem };
+import { IdentityDisconnected } from "./identity_disconnected_reducer.ts";
+export { IdentityDisconnected };
 import { JoinGame } from "./join_game_reducer.ts";
 export { JoinGame };
+import { RemoveExpiredPlayerInvites } from "./remove_expired_player_invites_reducer.ts";
+export { RemoveExpiredPlayerInvites };
 import { RemoveExpiredVotes } from "./remove_expired_votes_reducer.ts";
 export { RemoveExpiredVotes };
 import { SetName } from "./set_name_reducer.ts";
@@ -52,6 +62,8 @@ import { StartNewGame } from "./start_new_game_reducer.ts";
 export { StartNewGame };
 import { SubmitNewBingoItem } from "./submit_new_bingo_item_reducer.ts";
 export { SubmitNewBingoItem };
+import { UsePlayerInvite } from "./use_player_invite_reducer.ts";
+export { UsePlayerInvite };
 
 // Import and reexport all table handle types
 import { BingoBoardTableHandle } from "./bingo_board_table.ts";
@@ -64,10 +76,14 @@ import { ItemCheckVoteTableHandle } from "./item_check_vote_table.ts";
 export { ItemCheckVoteTableHandle };
 import { PlayerTableHandle } from "./player_table.ts";
 export { PlayerTableHandle };
+import { PlayerInviteTableHandle } from "./player_invite_table.ts";
+export { PlayerInviteTableHandle };
 import { PlayerItemSubjectTableHandle } from "./player_item_subject_table.ts";
 export { PlayerItemSubjectTableHandle };
 import { PlayerSessionTableHandle } from "./player_session_table.ts";
 export { PlayerSessionTableHandle };
+import { RemoveExpiredInvitesTimerTableHandle } from "./remove_expired_invites_timer_table.ts";
+export { RemoveExpiredInvitesTimerTableHandle };
 import { RemoveExpiredVotesTimerTableHandle } from "./remove_expired_votes_timer_table.ts";
 export { RemoveExpiredVotesTimerTableHandle };
 
@@ -86,10 +102,14 @@ import { ItemCheckVote } from "./item_check_vote_type.ts";
 export { ItemCheckVote };
 import { Player } from "./player_type.ts";
 export { Player };
+import { PlayerInvite } from "./player_invite_type.ts";
+export { PlayerInvite };
 import { PlayerItemSubject } from "./player_item_subject_type.ts";
 export { PlayerItemSubject };
 import { PlayerSession } from "./player_session_type.ts";
 export { PlayerSession };
+import { RemoveExpiredInvitesTimer } from "./remove_expired_invites_timer_type.ts";
+export { RemoveExpiredInvitesTimer };
 import { RemoveExpiredVotesTimer } from "./remove_expired_votes_timer_type.ts";
 export { RemoveExpiredVotesTimer };
 
@@ -118,7 +138,12 @@ const REMOTE_MODULE = {
     player: {
       tableName: "player",
       rowType: Player.getTypeScriptAlgebraicType(),
-      primaryKey: "identity",
+      primaryKey: "id",
+    },
+    player_invite: {
+      tableName: "player_invite",
+      rowType: PlayerInvite.getTypeScriptAlgebraicType(),
+      primaryKey: "id",
     },
     player_item_subject: {
       tableName: "player_item_subject",
@@ -127,6 +152,11 @@ const REMOTE_MODULE = {
     player_session: {
       tableName: "player_session",
       rowType: PlayerSession.getTypeScriptAlgebraicType(),
+    },
+    remove_expired_invites_timer: {
+      tableName: "remove_expired_invites_timer",
+      rowType: RemoveExpiredInvitesTimer.getTypeScriptAlgebraicType(),
+      primaryKey: "scheduledId",
     },
     remove_expired_votes_timer: {
       tableName: "remove_expired_votes_timer",
@@ -143,17 +173,37 @@ const REMOTE_MODULE = {
       reducerName: "check_for_winner",
       argsType: CheckForWinner.getTypeScriptAlgebraicType(),
     },
+    client_connected: {
+      reducerName: "client_connected",
+      argsType: ClientConnected.getTypeScriptAlgebraicType(),
+    },
     create_bingo_board: {
       reducerName: "create_bingo_board",
       argsType: CreateBingoBoard.getTypeScriptAlgebraicType(),
+    },
+    create_player: {
+      reducerName: "create_player",
+      argsType: CreatePlayer.getTypeScriptAlgebraicType(),
+    },
+    create_player_invite: {
+      reducerName: "create_player_invite",
+      argsType: CreatePlayerInvite.getTypeScriptAlgebraicType(),
     },
     delete_bingo_item: {
       reducerName: "delete_bingo_item",
       argsType: DeleteBingoItem.getTypeScriptAlgebraicType(),
     },
+    identity_disconnected: {
+      reducerName: "identity_disconnected",
+      argsType: IdentityDisconnected.getTypeScriptAlgebraicType(),
+    },
     join_game: {
       reducerName: "join_game",
       argsType: JoinGame.getTypeScriptAlgebraicType(),
+    },
+    remove_expired_player_invites: {
+      reducerName: "remove_expired_player_invites",
+      argsType: RemoveExpiredPlayerInvites.getTypeScriptAlgebraicType(),
     },
     remove_expired_votes: {
       reducerName: "remove_expired_votes",
@@ -174,6 +224,10 @@ const REMOTE_MODULE = {
     submit_new_bingo_item: {
       reducerName: "submit_new_bingo_item",
       argsType: SubmitNewBingoItem.getTypeScriptAlgebraicType(),
+    },
+    use_player_invite: {
+      reducerName: "use_player_invite",
+      argsType: UsePlayerInvite.getTypeScriptAlgebraicType(),
     },
   },
   // Constructors which are used by the DbConnectionImpl to
@@ -204,14 +258,20 @@ const REMOTE_MODULE = {
 export type Reducer = never
 | { name: "CastCheckOffVote", args: CastCheckOffVote }
 | { name: "CheckForWinner", args: CheckForWinner }
+| { name: "ClientConnected", args: ClientConnected }
 | { name: "CreateBingoBoard", args: CreateBingoBoard }
+| { name: "CreatePlayer", args: CreatePlayer }
+| { name: "CreatePlayerInvite", args: CreatePlayerInvite }
 | { name: "DeleteBingoItem", args: DeleteBingoItem }
+| { name: "IdentityDisconnected", args: IdentityDisconnected }
 | { name: "JoinGame", args: JoinGame }
+| { name: "RemoveExpiredPlayerInvites", args: RemoveExpiredPlayerInvites }
 | { name: "RemoveExpiredVotes", args: RemoveExpiredVotes }
 | { name: "SetName", args: SetName }
 | { name: "SignIn", args: SignIn }
 | { name: "StartNewGame", args: StartNewGame }
 | { name: "SubmitNewBingoItem", args: SubmitNewBingoItem }
+| { name: "UsePlayerInvite", args: UsePlayerInvite }
 ;
 
 export class RemoteReducers {
@@ -249,6 +309,14 @@ export class RemoteReducers {
     this.connection.offReducer("check_for_winner", callback);
   }
 
+  onClientConnected(callback: (ctx: ReducerEventContext) => void) {
+    this.connection.onReducer("client_connected", callback);
+  }
+
+  removeOnClientConnected(callback: (ctx: ReducerEventContext) => void) {
+    this.connection.offReducer("client_connected", callback);
+  }
+
   createBingoBoard(playerId: Identity, gameSessionId: number) {
     const __args = { playerId, gameSessionId };
     let __writer = new BinaryWriter(1024);
@@ -263,6 +331,38 @@ export class RemoteReducers {
 
   removeOnCreateBingoBoard(callback: (ctx: ReducerEventContext, playerId: Identity, gameSessionId: number) => void) {
     this.connection.offReducer("create_bingo_board", callback);
+  }
+
+  createPlayer(name: string, password: string) {
+    const __args = { name, password };
+    let __writer = new BinaryWriter(1024);
+    CreatePlayer.getTypeScriptAlgebraicType().serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("create_player", __argsBuffer, this.setCallReducerFlags.createPlayerFlags);
+  }
+
+  onCreatePlayer(callback: (ctx: ReducerEventContext, name: string, password: string) => void) {
+    this.connection.onReducer("create_player", callback);
+  }
+
+  removeOnCreatePlayer(callback: (ctx: ReducerEventContext, name: string, password: string) => void) {
+    this.connection.offReducer("create_player", callback);
+  }
+
+  createPlayerInvite(token: string) {
+    const __args = { token };
+    let __writer = new BinaryWriter(1024);
+    CreatePlayerInvite.getTypeScriptAlgebraicType().serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("create_player_invite", __argsBuffer, this.setCallReducerFlags.createPlayerInviteFlags);
+  }
+
+  onCreatePlayerInvite(callback: (ctx: ReducerEventContext, token: string) => void) {
+    this.connection.onReducer("create_player_invite", callback);
+  }
+
+  removeOnCreatePlayerInvite(callback: (ctx: ReducerEventContext, token: string) => void) {
+    this.connection.offReducer("create_player_invite", callback);
   }
 
   deleteBingoItem(bingoItemId: number) {
@@ -281,6 +381,14 @@ export class RemoteReducers {
     this.connection.offReducer("delete_bingo_item", callback);
   }
 
+  onIdentityDisconnected(callback: (ctx: ReducerEventContext) => void) {
+    this.connection.onReducer("identity_disconnected", callback);
+  }
+
+  removeOnIdentityDisconnected(callback: (ctx: ReducerEventContext) => void) {
+    this.connection.offReducer("identity_disconnected", callback);
+  }
+
   joinGame(gameSessionId: number) {
     const __args = { gameSessionId };
     let __writer = new BinaryWriter(1024);
@@ -295,6 +403,22 @@ export class RemoteReducers {
 
   removeOnJoinGame(callback: (ctx: ReducerEventContext, gameSessionId: number) => void) {
     this.connection.offReducer("join_game", callback);
+  }
+
+  removeExpiredPlayerInvites(timer: RemoveExpiredInvitesTimer) {
+    const __args = { timer };
+    let __writer = new BinaryWriter(1024);
+    RemoveExpiredPlayerInvites.getTypeScriptAlgebraicType().serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("remove_expired_player_invites", __argsBuffer, this.setCallReducerFlags.removeExpiredPlayerInvitesFlags);
+  }
+
+  onRemoveExpiredPlayerInvites(callback: (ctx: ReducerEventContext, timer: RemoveExpiredInvitesTimer) => void) {
+    this.connection.onReducer("remove_expired_player_invites", callback);
+  }
+
+  removeOnRemoveExpiredPlayerInvites(callback: (ctx: ReducerEventContext, timer: RemoveExpiredInvitesTimer) => void) {
+    this.connection.offReducer("remove_expired_player_invites", callback);
   }
 
   removeExpiredVotes(timer: RemoveExpiredVotesTimer) {
@@ -329,19 +453,19 @@ export class RemoteReducers {
     this.connection.offReducer("set_name", callback);
   }
 
-  signIn(password: string) {
-    const __args = { password };
+  signIn(name: string, password: string) {
+    const __args = { name, password };
     let __writer = new BinaryWriter(1024);
     SignIn.getTypeScriptAlgebraicType().serialize(__writer, __args);
     let __argsBuffer = __writer.getBuffer();
     this.connection.callReducer("sign_in", __argsBuffer, this.setCallReducerFlags.signInFlags);
   }
 
-  onSignIn(callback: (ctx: ReducerEventContext, password: string) => void) {
+  onSignIn(callback: (ctx: ReducerEventContext, name: string, password: string) => void) {
     this.connection.onReducer("sign_in", callback);
   }
 
-  removeOnSignIn(callback: (ctx: ReducerEventContext, password: string) => void) {
+  removeOnSignIn(callback: (ctx: ReducerEventContext, name: string, password: string) => void) {
     this.connection.offReducer("sign_in", callback);
   }
 
@@ -377,6 +501,22 @@ export class RemoteReducers {
     this.connection.offReducer("submit_new_bingo_item", callback);
   }
 
+  usePlayerInvite(token: string) {
+    const __args = { token };
+    let __writer = new BinaryWriter(1024);
+    UsePlayerInvite.getTypeScriptAlgebraicType().serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("use_player_invite", __argsBuffer, this.setCallReducerFlags.usePlayerInviteFlags);
+  }
+
+  onUsePlayerInvite(callback: (ctx: ReducerEventContext, token: string) => void) {
+    this.connection.onReducer("use_player_invite", callback);
+  }
+
+  removeOnUsePlayerInvite(callback: (ctx: ReducerEventContext, token: string) => void) {
+    this.connection.offReducer("use_player_invite", callback);
+  }
+
 }
 
 export class SetReducerFlags {
@@ -395,6 +535,16 @@ export class SetReducerFlags {
     this.createBingoBoardFlags = flags;
   }
 
+  createPlayerFlags: CallReducerFlags = 'FullUpdate';
+  createPlayer(flags: CallReducerFlags) {
+    this.createPlayerFlags = flags;
+  }
+
+  createPlayerInviteFlags: CallReducerFlags = 'FullUpdate';
+  createPlayerInvite(flags: CallReducerFlags) {
+    this.createPlayerInviteFlags = flags;
+  }
+
   deleteBingoItemFlags: CallReducerFlags = 'FullUpdate';
   deleteBingoItem(flags: CallReducerFlags) {
     this.deleteBingoItemFlags = flags;
@@ -403,6 +553,11 @@ export class SetReducerFlags {
   joinGameFlags: CallReducerFlags = 'FullUpdate';
   joinGame(flags: CallReducerFlags) {
     this.joinGameFlags = flags;
+  }
+
+  removeExpiredPlayerInvitesFlags: CallReducerFlags = 'FullUpdate';
+  removeExpiredPlayerInvites(flags: CallReducerFlags) {
+    this.removeExpiredPlayerInvitesFlags = flags;
   }
 
   removeExpiredVotesFlags: CallReducerFlags = 'FullUpdate';
@@ -430,6 +585,11 @@ export class SetReducerFlags {
     this.submitNewBingoItemFlags = flags;
   }
 
+  usePlayerInviteFlags: CallReducerFlags = 'FullUpdate';
+  usePlayerInvite(flags: CallReducerFlags) {
+    this.usePlayerInviteFlags = flags;
+  }
+
 }
 
 export class RemoteTables {
@@ -455,12 +615,20 @@ export class RemoteTables {
     return new PlayerTableHandle(this.connection.clientCache.getOrCreateTable<Player>(REMOTE_MODULE.tables.player));
   }
 
+  get playerInvite(): PlayerInviteTableHandle {
+    return new PlayerInviteTableHandle(this.connection.clientCache.getOrCreateTable<PlayerInvite>(REMOTE_MODULE.tables.player_invite));
+  }
+
   get playerItemSubject(): PlayerItemSubjectTableHandle {
     return new PlayerItemSubjectTableHandle(this.connection.clientCache.getOrCreateTable<PlayerItemSubject>(REMOTE_MODULE.tables.player_item_subject));
   }
 
   get playerSession(): PlayerSessionTableHandle {
     return new PlayerSessionTableHandle(this.connection.clientCache.getOrCreateTable<PlayerSession>(REMOTE_MODULE.tables.player_session));
+  }
+
+  get removeExpiredInvitesTimer(): RemoveExpiredInvitesTimerTableHandle {
+    return new RemoveExpiredInvitesTimerTableHandle(this.connection.clientCache.getOrCreateTable<RemoveExpiredInvitesTimer>(REMOTE_MODULE.tables.remove_expired_invites_timer));
   }
 
   get removeExpiredVotesTimer(): RemoveExpiredVotesTimerTableHandle {

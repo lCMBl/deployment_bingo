@@ -31,32 +31,27 @@ import {
   deepEqual,
 } from "@clockworklabs/spacetimedb-sdk";
 
-export type SignIn = {
-  name: string,
-  password: string,
-};
+export type IdentityDisconnected = {};
 
 /**
  * A namespace for generated helper functions.
  */
-export namespace SignIn {
+export namespace IdentityDisconnected {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
   */
   export function getTypeScriptAlgebraicType(): AlgebraicType {
     return AlgebraicType.createProductType([
-      new ProductTypeElement("name", AlgebraicType.createStringType()),
-      new ProductTypeElement("password", AlgebraicType.createStringType()),
     ]);
   }
 
-  export function serialize(writer: BinaryWriter, value: SignIn): void {
-    SignIn.getTypeScriptAlgebraicType().serialize(writer, value);
+  export function serialize(writer: BinaryWriter, value: IdentityDisconnected): void {
+    IdentityDisconnected.getTypeScriptAlgebraicType().serialize(writer, value);
   }
 
-  export function deserialize(reader: BinaryReader): SignIn {
-    return SignIn.getTypeScriptAlgebraicType().deserialize(reader);
+  export function deserialize(reader: BinaryReader): IdentityDisconnected {
+    return IdentityDisconnected.getTypeScriptAlgebraicType().deserialize(reader);
   }
 
 }

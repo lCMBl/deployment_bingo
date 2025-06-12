@@ -30,23 +30,23 @@ import {
   Timestamp,
   deepEqual,
 } from "@clockworklabs/spacetimedb-sdk";
-import { Player } from "./player_type";
+import { PlayerInvite } from "./player_invite_type";
 import { EventContext, Reducer, RemoteReducers, RemoteTables } from ".";
 
 /**
- * Table handle for the table `player`.
+ * Table handle for the table `player_invite`.
  *
- * Obtain a handle from the [`player`] property on [`RemoteTables`],
- * like `ctx.db.player`.
+ * Obtain a handle from the [`playerInvite`] property on [`RemoteTables`],
+ * like `ctx.db.playerInvite`.
  *
  * Users are encouraged not to explicitly reference this type,
  * but to directly chain method calls,
- * like `ctx.db.player.on_insert(...)`.
+ * like `ctx.db.playerInvite.on_insert(...)`.
  */
-export class PlayerTableHandle {
-  tableCache: TableCache<Player>;
+export class PlayerInviteTableHandle {
+  tableCache: TableCache<PlayerInvite>;
 
-  constructor(tableCache: TableCache<Player>) {
+  constructor(tableCache: TableCache<PlayerInvite>) {
     this.tableCache = tableCache;
   }
 
@@ -54,24 +54,24 @@ export class PlayerTableHandle {
     return this.tableCache.count();
   }
 
-  iter(): Iterable<Player> {
+  iter(): Iterable<PlayerInvite> {
     return this.tableCache.iter();
   }
   /**
-   * Access to the `id` unique index on the table `player`,
+   * Access to the `id` unique index on the table `player_invite`,
    * which allows point queries on the field of the same name
-   * via the [`PlayerIdUnique.find`] method.
+   * via the [`PlayerInviteIdUnique.find`] method.
    *
    * Users are encouraged not to explicitly reference this type,
    * but to directly chain method calls,
-   * like `ctx.db.player.id().find(...)`.
+   * like `ctx.db.playerInvite.id().find(...)`.
    *
-   * Get a handle on the `id` unique index on the table `player`.
+   * Get a handle on the `id` unique index on the table `player_invite`.
    */
   id = {
     // Find the subscribed row whose `id` column value is equal to `col_val`,
     // if such a row is present in the client cache.
-    find: (col_val: number): Player | undefined => {
+    find: (col_val: number): PlayerInvite | undefined => {
       for (let row of this.tableCache.iter()) {
         if (deepEqual(row.id, col_val)) {
           return row;
@@ -80,49 +80,49 @@ export class PlayerTableHandle {
     },
   };
   /**
-   * Access to the `identity` unique index on the table `player`,
+   * Access to the `token` unique index on the table `player_invite`,
    * which allows point queries on the field of the same name
-   * via the [`PlayerIdentityUnique.find`] method.
+   * via the [`PlayerInviteTokenUnique.find`] method.
    *
    * Users are encouraged not to explicitly reference this type,
    * but to directly chain method calls,
-   * like `ctx.db.player.identity().find(...)`.
+   * like `ctx.db.playerInvite.token().find(...)`.
    *
-   * Get a handle on the `identity` unique index on the table `player`.
+   * Get a handle on the `token` unique index on the table `player_invite`.
    */
-  identity = {
-    // Find the subscribed row whose `identity` column value is equal to `col_val`,
+  token = {
+    // Find the subscribed row whose `token` column value is equal to `col_val`,
     // if such a row is present in the client cache.
-    find: (col_val: Identity): Player | undefined => {
+    find: (col_val: string): PlayerInvite | undefined => {
       for (let row of this.tableCache.iter()) {
-        if (deepEqual(row.identity, col_val)) {
+        if (deepEqual(row.token, col_val)) {
           return row;
         }
       }
     },
   };
 
-  onInsert = (cb: (ctx: EventContext, row: Player) => void) => {
+  onInsert = (cb: (ctx: EventContext, row: PlayerInvite) => void) => {
     return this.tableCache.onInsert(cb);
   }
 
-  removeOnInsert = (cb: (ctx: EventContext, row: Player) => void) => {
+  removeOnInsert = (cb: (ctx: EventContext, row: PlayerInvite) => void) => {
     return this.tableCache.removeOnInsert(cb);
   }
 
-  onDelete = (cb: (ctx: EventContext, row: Player) => void) => {
+  onDelete = (cb: (ctx: EventContext, row: PlayerInvite) => void) => {
     return this.tableCache.onDelete(cb);
   }
 
-  removeOnDelete = (cb: (ctx: EventContext, row: Player) => void) => {
+  removeOnDelete = (cb: (ctx: EventContext, row: PlayerInvite) => void) => {
     return this.tableCache.removeOnDelete(cb);
   }
 
   // Updates are only defined for tables with primary keys.
-  onUpdate = (cb: (ctx: EventContext, oldRow: Player, newRow: Player) => void) => {
+  onUpdate = (cb: (ctx: EventContext, oldRow: PlayerInvite, newRow: PlayerInvite) => void) => {
     return this.tableCache.onUpdate(cb);
   }
 
-  removeOnUpdate = (cb: (ctx: EventContext, onRow: Player, newRow: Player) => void) => {
+  removeOnUpdate = (cb: (ctx: EventContext, onRow: PlayerInvite, newRow: PlayerInvite) => void) => {
     return this.tableCache.removeOnUpdate(cb);
   }}

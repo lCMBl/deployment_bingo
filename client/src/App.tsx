@@ -9,7 +9,7 @@ export type PlayerStatus = {
   online: boolean;
 }
 
-function usePlayers(conn: DbConnection | null): Map<string, Player> {
+function usePlayers(conn: DbConnection | null, onIdentityUpdate?: (newIdentity: Identity) => void): Map<string, Player> {
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
 
   useEffect(() => {
@@ -20,6 +20,17 @@ function usePlayers(conn: DbConnection | null): Map<string, Player> {
     conn.db.player.onInsert(onInsert);
 
     const onUpdate = (_ctx: EventContext, oldPlayer: Player, newPlayer: Player) => {
+      console.log('onUpdate', oldPlayer, newPlayer);
+      
+      // Check if we're awaiting an identity update after sign-in
+      if (sessionStorage.getItem('awaiting_identity_update') === 'true' && newPlayer.online && !oldPlayer.online) {
+        console.log('Detected identity change after sign-in:', newPlayer.identity.toHexString());
+        sessionStorage.removeItem('awaiting_identity_update');
+        if (onIdentityUpdate) {
+          onIdentityUpdate(newPlayer.identity);
+        }
+      }
+      
       setPlayers(prev => {
         prev.delete(oldPlayer.identity.toHexString());
         return new Map(prev.set(newPlayer.identity.toHexString(), newPlayer));
@@ -171,11 +182,14 @@ function usePlayerSessions(conn: DbConnection | null): PlayerSession[] {
 
 function useCurrentPlayer(conn: DbConnection | null, identity: Identity | null): Player | undefined {
   const players = usePlayers(conn);
+  console.log('useCurrentPlayer', identity?.toHexString(), players);
   if (!identity) return undefined;
+  console.log('useCurrentPlayer', identity.toHexString(), players.get(identity.toHexString()));
   return players.get(identity.toHexString());
 }
 
 function App() {
+  const [loginName, setLoginName] = useState('');
   const [password, setPassword] = useState('');
   const [newName, setNewName] = useState('');
   const [newGameSessionName, setNewGameSessionName] = useState('');
@@ -221,6 +235,10 @@ function App() {
       // Set up reducer callbacks
       conn.reducers.onSignIn(() => {
         console.log('Signed in successfully.');
+        // After sign-in, we need to detect the new identity from the player updates
+        // The sign-in process should trigger a player update with online: true
+        // We'll set a flag to capture the next online player as our new identity
+        sessionStorage.setItem('awaiting_identity_update', 'true');
       });
 
       subscribeToQueries(conn, [
@@ -245,7 +263,7 @@ function App() {
 
     setConn(
       DbConnection.builder()
-        .withUri('ws://localhost:3000')
+        .withUri('ws://localhost:3030')
         .withModuleName('deployment-bingo')
         .withToken(localStorage.getItem('auth_token') || '')
         .onConnect(onConnect)
@@ -255,7 +273,33 @@ function App() {
     );
   }, []);
 
-  const players = usePlayers(conn);
+  const handleIdentityUpdate = (newIdentity: Identity) => {
+    console.log('Updating identity after sign-in:', newIdentity.toHexString());
+    setIdentity(newIdentity);
+    
+    // Re-subscribe with the new identity for the bingo_board query
+    if (conn) {
+      const subscribeToQueries = (conn: DbConnection, queries: string[]) => {
+        conn
+          ?.subscriptionBuilder()
+          .onApplied(() => {
+            console.log('SDK client cache re-initialized after identity update.');
+          })
+          .subscribe(queries);
+      };
+
+      subscribeToQueries(conn, [
+        'SELECT * FROM player',
+        'SELECT * FROM game_session',
+        'SELECT * FROM player_session',
+        'SELECT * FROM bingo_item',
+        'SELECT * FROM player_item_subject',
+        `SELECT * FROM bingo_board WHERE player_id = '${newIdentity.toHexString()}'`,
+      ]);
+    }
+  };
+
+  const players = usePlayers(conn, handleIdentityUpdate);
   const gameSessions = useGameSessions(conn);
   const bingoItems = useBingoItems(conn);
   const playerItemSubjects = usePlayerItemSubjects(conn);
@@ -274,7 +318,7 @@ function App() {
   if (!currentPlayer) {
     const handleSignIn = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      conn.reducers.signIn(password);
+      conn.reducers.signIn(loginName, password);
     };
 
     return (
@@ -282,8 +326,15 @@ function App() {
         <div className="landing-page">
           <h1>Deployment Bingo</h1>
           <p>Welcome to Deployment Bingo! Track deployment milestones and compete with your team.</p>
-          <p>Join the fun by signing in with the team password.</p>
+          <p>Join the fun by signing in.</p>
           <form onSubmit={handleSignIn}>
+            <input
+              type="text"
+              placeholder="Enter name"
+              value={loginName}
+              onChange={(e) => setLoginName(e.target.value)}
+              required
+            />
             <input
               type="password"
               placeholder="Enter password"
