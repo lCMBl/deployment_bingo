@@ -9,17 +9,17 @@
 
 /* ----- Color Variables ----- */
 :root {
-  --theme-color: #3dc373;
-  --theme-color-contrast: #08180e;
-  --textbox-color: #edfef4;
+  --theme-color: #547792;
+  --theme-color-contrast: #ECEFCA;
+  --textbox-color: #94B4C1;
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --theme-color: #4cf490;
-    --theme-color-contrast: #132219;
-    --textbox-color: #0f311d;
+    --theme-color: #94B4C1;
+    --theme-color-contrast: #213448;
+    --textbox-color: #213448;
   }
 }
 

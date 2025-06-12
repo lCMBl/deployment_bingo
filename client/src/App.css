@@ -47,13 +47,13 @@
 .landing-page h1 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
-  color: #333;
+  color: #213448;
 }
 
 .landing-page p {
   font-size: 1.1rem;
   margin-bottom: 1rem;
-  color: #666;
+  color: #547792;
   line-height: 1.6;
 }
 
@@ -74,14 +74,14 @@
 
 .landing-page input[type="password"]:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #547792;
 }
 
 .landing-page button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  background-color: #007bff;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -89,7 +89,7 @@
 }
 
 .landing-page button:hover {
-  background-color: #0056b3;
+  background-color: #213448;
 }
 
 /* Main Interface Styles */
@@ -97,7 +97,7 @@
 .game-sessions,
 .new-bingo-item,
 .bingo-items {
-  background-color: #f8f9fa;
+  background-color: #ECEFCA;
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -110,7 +110,7 @@
 .bingo-items h2 {
   margin-top: 0;
   margin-bottom: 1rem;
-  color: #333;
+  color: #213448;
 }
 
 /* Players List */
@@ -138,11 +138,11 @@
 }
 
 .status-indicator.online {
-  color: #28a745;
+  color: #547792;
 }
 
 .status-indicator.offline {
-  color: #887e7f;
+  color: #94B4C1;
 }
 
 /* Game Sessions */
@@ -177,12 +177,12 @@
 
 .session-item h3 {
   margin: 0 0 0.5rem 0;
-  color: #333;
+  color: #213448;
 }
 
 .session-item p {
   margin: 0.25rem 0;
-  color: #666;
+  color: #547792;
 }
 
 /* Session Action Buttons */
@@ -207,30 +207,30 @@
 }
 
 .session-action-open {
-  background-color: #007bff;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
 }
 
 .session-action-open:hover {
-  background-color: #0056b3;
+  background-color: #213448;
 }
 
 .session-action-join {
-  background-color: #28a745;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
 }
 
 .session-action-join:hover {
-  background-color: #218838;
+  background-color: #213448;
 }
 
 .session-action-view {
-  background-color: #6c757d;
-  color: white;
+  background-color: #94B4C1;
+  color: #213448;
 }
 
 .session-action-view:hover {
-  background-color: #5a6268;
+  background-color: #547792;
 }
 
 .create-game-button {
@@ -238,8 +238,8 @@
   padding: 0.75rem 1.5rem;
   margin-top: 1rem;
   font-size: 1rem;
-  background-color: #28a745;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -247,7 +247,7 @@
 }
 
 .create-game-button:hover {
-  background-color: #218838;
+  background-color: #213448;
 }
 
 .create-game-button:disabled {
@@ -276,8 +276,8 @@
 .pagination-controls button {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  background-color: #007bff;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -285,7 +285,7 @@
 }
 
 .pagination-controls button:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: #213448;
 }
 
 .pagination-controls button:disabled {
@@ -296,7 +296,7 @@
 
 .pagination-info {
   font-size: 0.875rem;
-  color: #666;
+  color: #547792;
   font-weight: 500;
   min-width: 100px;
   text-align: center;
@@ -322,14 +322,14 @@
 
 .new-bingo-item textarea:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #547792;
 }
 
 .new-bingo-item button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  background-color: #28a745;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -337,7 +337,7 @@
 }
 
 .new-bingo-item button:hover {
-  background-color: #218838;
+  background-color: #213448;
 }
 
 /* Player Select Dropdown */
@@ -368,7 +368,7 @@
 
 .player-select:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #547792;
 }
 
 .player-select option {
@@ -381,8 +381,8 @@
 }
 
 .player-select option:checked {
-  background-color: #007bff;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
 }
 
 .selected-count {
@@ -424,21 +424,21 @@
 
 .bingo-item-body {
   font-size: 1rem;
-  color: #333;
+  color: #213448;
   line-height: 1.5;
 }
 
 .bingo-item-players {
   font-size: 0.875rem;
-  color: #666;
+  color: #547792;
   font-style: italic;
 }
 
 .delete-button {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  background-color: #dc3545;
-  color: white;
+  background-color: #213448;
+  color: #ECEFCA;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -448,7 +448,7 @@
 }
 
 .delete-button:hover {
-  background-color: #c82333;
+  background-color: #547792;
 }
 
 /* Bingo Game View Styles */
@@ -464,22 +464,22 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background-color: #ECEFCA;
+  border-bottom: 2px solid #94B4C1;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .game-title {
   margin: 0;
   font-size: 2rem;
-  color: #333;
+  color: #213448;
 }
 
 .back-button {
   padding: 0.5rem 1.5rem;
   font-size: 1rem;
-  background-color: #6c757d;
-  color: white;
+  background-color: #94B4C1;
+  color: #213448;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -487,18 +487,18 @@
 }
 
 .back-button:hover {
-  background-color: #5a6268;
+  background-color: #547792;
 }
 
 .game-players-bar {
   padding: 1rem 2rem;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
+  background-color: #ECEFCA;
+  border-bottom: 1px solid #94B4C1;
 }
 
 .game-players-bar h3 {
   margin: 0 0 0.5rem 0;
-  color: #333;
+  color: #213448;
 }
 
 .game-player-list {
@@ -528,7 +528,7 @@
 .loading-message {
   text-align: center;
   font-size: 1.2rem;
-  color: #666;
+  color: #547792;
 }
 
 .bingo-grid {
@@ -539,7 +539,7 @@
   width: min(90vw, 600px);
   aspect-ratio: 1;
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: #ECEFCA;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -550,7 +550,7 @@
   justify-content: center;
   padding: 0.5rem;
   background-color: white;
-  border: 2px solid #dee2e6;
+  border: 2px solid #94B4C1;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
@@ -558,18 +558,18 @@
 }
 
 .bingo-cell:hover {
-  border-color: #007bff;
+  border-color: #547792;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .bingo-cell.checked {
-  background-color: #28a745;
-  border-color: #1e7e34;
+  background-color: #547792;
+  border-color: #213448;
 }
 
 .bingo-cell.checked .bingo-item-text {
-  color: white;
+  color: #ECEFCA;
   font-weight: bold;
 }
 
@@ -577,7 +577,7 @@
   text-align: center;
   font-size: 0.9rem;
   line-height: 1.3;
-  color: #333;
+  color: #213448;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
@@ -589,8 +589,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 2rem 3rem;
-  background-color: #ffc107;
-  color: #333;
+  background-color: #ECEFCA;
+  color: #213448;
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 1000;
@@ -683,8 +683,8 @@
 .invite-button {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  background-color: #28a745;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -692,7 +692,7 @@
 }
 
 .invite-button:hover {
-  background-color: #218838;
+  background-color: #213448;
 }
 
 /* Modal Styles */
@@ -776,8 +776,8 @@
 
 .copy-button {
   padding: 0.75rem 1rem;
-  background-color: #007bff;
-  color: white;
+  background-color: #547792;
+  color: #ECEFCA;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -786,12 +786,12 @@
 }
 
 .copy-button:hover {
-  background-color: #0056b3;
+  background-color: #213448;
 }
 
 .invite-note {
   font-size: 0.875rem;
-  color: #999;
+  color: #547792;
   font-style: italic;
   margin-bottom: 0 !important;
 }
