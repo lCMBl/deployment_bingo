@@ -138,7 +138,7 @@
 }
 
 .status-indicator.online {
-  color: #547792;
+  color: #ECEFCA;
 }
 
 .status-indicator.offline {
@@ -351,7 +351,7 @@
 
 .player-select-container label {
   font-weight: 500;
-  color: #333;
+  color: #ECEFCA;
   text-align: left;
 }
 
@@ -360,7 +360,7 @@
   font-size: 0.95rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  background-color: white;
+  background-color: #547792;
   min-height: 120px;
   max-height: 200px;
   overflow-y: auto;
@@ -388,7 +388,7 @@
 
 .selected-count {
   font-size: 0.875rem;
-  color: #666;
+  color: #ECEFCA;
   margin: 0;
   text-align: left;
 }
