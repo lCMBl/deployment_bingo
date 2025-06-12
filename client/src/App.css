@@ -23,6 +23,11 @@
 
 .profile h1 {
   margin-right: auto; /* pushes name/edit form to the right */
+  color: #ECEFCA;
+}
+
+.profile p {
+  color: #ECEFCA;
 }
 
 .profile form {
@@ -34,7 +39,32 @@
 }
 
 .profile form input {
-  background-color: var(--textbox-color);
+  background-color: #2C3B4D;
+  color: #ECEFCA;
+  border: 1px solid #94B4C1;
+}
+
+.profile form input:focus {
+  border-color: #ECEFCA;
+  box-shadow: 0 0 0 2px rgba(236, 239, 202, 0.2);
+}
+
+.profile button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background-color: #2C3B4D;
+  color: #ECEFCA;
+  border: 1px solid #94B4C1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile button:hover {
+  background-color: #1A2530;
+  border-color: #ECEFCA;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Landing Page Styles */
@@ -47,7 +77,7 @@
 .landing-page h1 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
-  color: #213448;
+  color: #ECEFCA;
 }
 
 .landing-page p {
@@ -204,10 +234,10 @@
 .session-action-button {
   padding: 0.5rem 1.5rem;
   font-size: 0.875rem;
-  border: none;
+  border: 1px solid #94B4C1;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.1s;
+  transition: all 0.2s ease;
   white-space: nowrap;
   margin-left: 1rem;
   min-width: 80px;
@@ -215,10 +245,7 @@
 
 .session-action-button:hover {
   transform: translateY(-1px);
-}
-
-.session-action-button:active {
-  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .session-action-open {
@@ -227,25 +254,28 @@
 }
 
 .session-action-open:hover {
-  background-color: #213448;
+  background-color: #3A5A6E;
+  border-color: #ECEFCA;
 }
 
 .session-action-join {
-  background-color: #547792;
+  background-color: #2C3B4D;
   color: #ECEFCA;
 }
 
 .session-action-join:hover {
-  background-color: #213448;
+  background-color: #1A2530;
+  border-color: #ECEFCA;
 }
 
 .session-action-view {
-  background-color: #94B4C1;
-  color: #213448;
+  background-color: #2C3B4D;
+  color: #ECEFCA;
 }
 
 .session-action-view:hover {
-  background-color: #547792;
+  background-color: #1A2530;
+  border-color: #ECEFCA;
 }
 
 .create-game-button {
@@ -352,7 +382,10 @@
 }
 
 .new-bingo-item button:hover {
-  background-color: #213448;
+  background-color: #1A2530;
+  border-color: #ECEFCA;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Player Select Dropdown */
@@ -724,7 +757,8 @@
 }
 
 .invite-button:hover {
-  background-color: #213448;
+  background-color: #1A2530;
+  border-color: #ECEFCA;
 }
 
 /* Modal Styles */
