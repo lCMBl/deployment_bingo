@@ -504,7 +504,7 @@ pub fn identity_disconnected(ctx: &ReducerContext) {
 
 // --server http://localhost:6666
 // spacetime publish --project-path server  deployment-bingo
-// spacetime call --server http://localhost:6666 deployment-bingo submit_new_bingo_item "Someone curses PNNL"
+// spacetime call --server http://localhost:6666 deployment-bingo submit_new_bingo_item "Someone curses the documentation"
 // spacetime logs --server http://localhost:6666 deployment-bingo
 // spacetime sql --server http://localhost:6666 deployment-bingo "SELECT * FROM bingo_item"
 
