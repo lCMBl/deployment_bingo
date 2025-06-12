@@ -101,6 +101,7 @@
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #94B4C1;
 }
 
 .players h1,
@@ -131,6 +132,15 @@
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   color: #ECEFCA;
+  border: 1px solid #94B4C1;
+  transition: all 0.2s ease;
+}
+
+.player-item:hover {
+  background-color: #3A5A6E;
+  border-color: #ECEFCA;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .status-indicator {
@@ -164,12 +174,16 @@
   background-color: #547792;
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s;
+  transition: all 0.2s ease;
   color: #ECEFCA;
+  border: 1px solid #94B4C1;
 }
 
 .session-item:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #3A5A6E;
+  border-color: #ECEFCA;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .session-info {
@@ -358,32 +372,37 @@
 .player-select {
   padding: 0.5rem;
   font-size: 0.95rem;
-  border: 1px solid #ddd;
+  border: 1px solid #94B4C1;
   border-radius: 4px;
-  background-color: #547792;
+  background-color: #2C3B4D;
+  color: #ECEFCA;
   min-height: 120px;
   max-height: 200px;
   overflow-y: auto;
-  transition: border-color 0.3s;
+  transition: all 0.2s ease;
 }
 
 .player-select:focus {
   outline: none;
-  border-color: #547792;
+  border-color: #ECEFCA;
+  box-shadow: 0 0 0 2px rgba(236, 239, 202, 0.2);
 }
 
 .player-select option {
   padding: 0.5rem;
   cursor: pointer;
+  background-color: #2C3B4D;
+  color: #ECEFCA;
 }
 
 .player-select option:hover {
-  background-color: #f0f0f0;
+  background-color: #3A5A6E;
 }
 
 .player-select option:checked {
   background-color: #547792;
   color: #ECEFCA;
+  font-weight: bold;
 }
 
 .selected-count {
@@ -408,12 +427,16 @@
   background-color: #547792;
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s;
+  transition: all 0.2s ease;
   color: #ECEFCA;
+  border: 1px solid #94B4C1;
 }
 
 .bingo-item:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #3A5A6E;
+  border-color: #ECEFCA;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .bingo-item-content {
@@ -439,18 +462,21 @@
 .delete-button {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  background-color: #213448;
+  background-color: #2C3B4D;
   color: #ECEFCA;
-  border: none;
+  border: 1px solid #94B4C1;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
   white-space: nowrap;
   margin-left: 1rem;
 }
 
 .delete-button:hover {
-  background-color: #547792;
+  background-color: #1A2530;
+  border-color: #ECEFCA;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Bingo Game View Styles */
@@ -545,6 +571,7 @@
   background-color: #213448;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 2px solid #94B4C1;
 }
 
 .bingo-cell {
@@ -556,19 +583,20 @@
   border: 2px solid #94B4C1;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   min-height: 80px;
   color: #ECEFCA;
 }
 
 .bingo-cell:hover {
+  background-color: #3A5A6E;
   border-color: #ECEFCA;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .bingo-cell.checked {
-  background-color: #213448;
+  background-color: #2C3B4D;
   border-color: #ECEFCA;
 }
 
@@ -722,6 +750,7 @@
   max-height: 90vh;
   overflow-y: auto;
   color: #ECEFCA;
+  border: 2px solid #94B4C1;
 }
 
 .modal-header {
@@ -776,8 +805,14 @@
   border: 1px solid #94B4C1;
   border-radius: 4px;
   font-family: monospace;
-  background-color: #547792;
+  background-color: #2C3B4D;
   color: #ECEFCA;
+  transition: all 0.2s ease;
+}
+
+.invite-link-input:focus {
+  border-color: #ECEFCA;
+  box-shadow: 0 0 0 2px rgba(236, 239, 202, 0.2);
 }
 
 .copy-button {
