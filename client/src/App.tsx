@@ -202,6 +202,8 @@ function App() {
   const [currentView, setCurrentView] = useState<'main' | 'game'>('main');
   const [currentGameSessionId, setCurrentGameSessionId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
 
   const onSubmitNewName = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -377,6 +379,29 @@ function App() {
 
   const name = currentPlayer.name || identity.toHexString().substring(0, 8);
 
+  const handleCreateInvite = () => {
+    // Generate a random token
+    const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    
+    // Call the reducer to create the invite
+    conn?.reducers.createPlayerInvite(token);
+    
+    // Create the invite link
+    const hostUrl = window.location.origin;
+    const link = `${hostUrl}?token=${token}`;
+    setInviteLink(link);
+    setShowInviteModal(true);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      // You could add a toast notification here if desired
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
+
   // Show game view if selected
   if (currentView === 'game' && currentGameSessionId !== null) {
     return (
@@ -403,14 +428,22 @@ function App() {
         {!settingName ? (
           <>
             <p>{name}</p>
-            <button
-              onClick={() => {
-                setSettingName(true);
-                setNewName(name);
-              }}
-            >
-              Edit Name
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => {
+                  setSettingName(true);
+                  setNewName(name);
+                }}
+              >
+                Edit Name
+              </button>
+              <button
+                onClick={handleCreateInvite}
+                className="invite-button"
+              >
+                Create Invite
+              </button>
+            </div>
           </>
         ) : (
           <form onSubmit={onSubmitNewName}>
@@ -630,6 +663,41 @@ function App() {
           </div>
         )}
       </div>
+      
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Player Invite Created</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowInviteModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Share this link with new players to invite them to join:</p>
+              <div className="invite-link-container">
+                <input 
+                  type="text" 
+                  value={inviteLink} 
+                  readOnly 
+                  className="invite-link-input"
+                />
+                <button 
+                  onClick={copyToClipboard}
+                  className="copy-button"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="invite-note">This invite will expire in 1 hour.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
