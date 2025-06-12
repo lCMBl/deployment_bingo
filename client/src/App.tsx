@@ -318,9 +318,35 @@ function App() {
 
   // Show landing page if user is not signed in
   if (!currentPlayer) {
+    // Check for invite token in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
     const handleSignIn = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       conn.reducers.signIn(loginName, password);
+    };
+
+    const handleCreatePlayer = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (token && password.length >= 4) {
+        // First, use the player invite token
+        conn.reducers.usePlayerInvite(token);
+        
+        // Set up callbacks for the signup flow
+        const onInviteUsed = () => {
+          conn.reducers.createPlayer(loginName, password);
+          conn.reducers.removeOnUsePlayerInvite(onInviteUsed);
+        };
+        
+        const onPlayerCreated = () => {
+          conn.reducers.signIn(loginName, password);
+          conn.reducers.removeOnCreatePlayer(onPlayerCreated);
+        };
+        
+        conn.reducers.onUsePlayerInvite(onInviteUsed);
+        conn.reducers.onCreatePlayer(onPlayerCreated);
+      }
     };
 
     return (
@@ -328,24 +354,63 @@ function App() {
         <div className="landing-page">
           <h1>Deployment Bingo</h1>
           <p>Welcome to Deployment Bingo! Track deployment milestones and compete with your team.</p>
-          <p>Join the fun by signing in.</p>
-          <form onSubmit={handleSignIn}>
-            <input
-              type="text"
-              placeholder="Enter name"
-              value={loginName}
-              onChange={(e) => setLoginName(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button type="submit">Sign In</button>
-          </form>
+          
+          {token ? (
+            // Show create new player form when token is present
+            <>
+              <p>You've been invited to join! Create your account to get started.</p>
+              <form onSubmit={handleCreatePlayer}>
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  value={loginName}
+                  onChange={(e) => setLoginName(e.target.value)}
+                  required
+                  minLength={2}
+                  maxLength={50}
+                />
+                <input
+                  type="password"
+                  placeholder="Create password (min 4 chars)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={4}
+                />
+                <button type="submit" disabled={password.length < 4}>Create Account</button>
+              </form>
+              <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
+                Already have an account? <button 
+                  onClick={() => window.location.href = window.location.pathname}
+                  style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}
+                >
+                  Sign in instead
+                </button>
+              </p>
+            </>
+          ) : (
+            // Show sign in form when no token is present
+            <>
+              <p>Join the fun by signing in.</p>
+              <form onSubmit={handleSignIn}>
+                <input
+                  type="text"
+                  placeholder="Enter name"
+                  value={loginName}
+                  onChange={(e) => setLoginName(e.target.value)}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button type="submit">Sign In</button>
+              </form>
+            </>
+          )}
         </div>
       </div>
     );
