@@ -511,4 +511,4 @@ pub fn identity_disconnected(ctx: &ReducerContext) {
 // spacetime generate --lang typescript --out-dir client/src/module_bindings --project-path server
 
 // spacetime sql --server http://localhost:3030 deployment-bingo "SELECT * FROM player"
-// spacetime call --server http://localhost:3030 deployment-bingo create_player "Christian" "barencms"
+// spacetime call --server http://localhost:3030 deployment-bingo create_player "name" "pass"
