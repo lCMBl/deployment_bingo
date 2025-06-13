@@ -12,3 +12,5 @@ You should now be able to visit the server frontend at [http://localhost:5173/](
 - Something about docker doesn't like how the spacetime db credentials are being stored. I haven't been able to figure it out yet, but basically every time you reload the page you have to log in again.
 - No way to change password. Really the entire auth system is very janky.
 - does item voting take into account that not everyone has the same items on their board? Nope.
+- new players dont always show up in the bingo game
+- rejoining gives you a different bingo board.
