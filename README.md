@@ -13,4 +13,4 @@ You should now be able to visit the server frontend at [http://localhost:5173/](
 - No way to change password. Really the entire auth system is very janky.
 - does item voting take into account that not everyone has the same items on their board? Nope.
 - new players dont always show up in the bingo game
-- rejoining gives you a different bingo board.
+- rejoining gives you a different bingo board. -- not just you, EVERYONE
