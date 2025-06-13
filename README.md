@@ -16,3 +16,5 @@ You should now be able to visit the server frontend at [http://localhost:5173/](
 - rejoining gives you a different bingo board. -- not just you, EVERYONE
 - one person can click multiple times to force something through.
 - could lean into chaos, and have it be almost mario cart like, with allowing people to sabotage each other?
+- switch the voting mechanic, where anyone can click to check off, but you need a >= 50% vote to un-check a checked tile.
+- need to be more liberal with table usage.
